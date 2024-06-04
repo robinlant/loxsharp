@@ -25,6 +25,12 @@ public class Program
 		}
 	}
 
+	public static void Error(int line, string message)
+	{
+		Report(line, "", message);
+		_hadError = true;
+	}
+
 	private static void RunFile(string file)
 	{
 		if (!File.Exists(file))
@@ -57,15 +63,9 @@ public class Program
 	private static void Run(string source)
 	{
 		// var scanner = new Scanner();
-		// var tokens = Scanner.scanTockens(source);
+		// var tokens = Scanner.scanTokens(source);
+		Console.WriteLine(source);
 	}
-
-	private static void Error(int line, string message)
-	{
-		Report(line, "", message);
-		_hadError = true;
-	}
-
 
 	private static void Report(int line, string where, string message)
 	{
