@@ -5,6 +5,8 @@ namespace loxsharp;
 
 public class Program
 {
+	private static bool _hadError = false;
+
 	public static void Main(string[] args)
 	{
 		Console.WriteLine();
@@ -36,6 +38,8 @@ public class Program
 		var bytes = File.ReadAllBytes(file);
 
 		Run(Encoding.UTF8.GetString(bytes));
+
+		if(_hadError) Environment.Exit(65);
 	}
 
 	private static void RunPrompt()
@@ -46,6 +50,7 @@ public class Program
 			var line = Console.ReadLine();
 			if (line is null) break;
 			Run(line);
+			_hadError = false;
 		}
 	}
 
@@ -53,5 +58,17 @@ public class Program
 	{
 		// var scanner = new Scanner();
 		// var tokens = Scanner.scanTockens(source);
+	}
+
+	private static void Error(int line, string message)
+	{
+		Report(line, "", message);
+		_hadError = true;
+	}
+
+
+	private static void Report(int line, string where, string message)
+	{
+		Console.Error.Write($"[line: {line}] Error {where}: {message}");
 	}
 }
