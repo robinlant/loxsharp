@@ -2,11 +2,33 @@ namespace loxsharp;
 
 public class Scanner
 {
+	private static readonly Dictionary<string, TokenType> Keywords
+		= new Dictionary<string, TokenType>();
 	private readonly string _source;
 	private readonly List<Token> _tokens = new List<Token>();
-	private int _start = 0;
-	private int _current = 0;
-	private int _line = 0;
+	private int _start;
+	private int _current;
+	private int _line = 1;
+
+	static Scanner()
+	{
+		Keywords.Add("and", TokenType.AND);
+		Keywords.Add("class", TokenType.CLASS);
+		Keywords.Add("else", TokenType.ELSE);
+		Keywords.Add("false", TokenType.FALSE);
+		Keywords.Add("fun", TokenType.FUN);
+		Keywords.Add("for", TokenType.FOR);
+		Keywords.Add("if", TokenType.IF);
+		Keywords.Add("nil", TokenType.NIL);
+		Keywords.Add("or", TokenType.OR);
+		Keywords.Add("print", TokenType.PRINT);
+		Keywords.Add("return", TokenType.RETURN);
+		Keywords.Add("super", TokenType.SUPER);
+		Keywords.Add("this", TokenType.THIS);
+		Keywords.Add("true", TokenType.TRUE);
+		Keywords.Add("var", TokenType.VAR);
+		Keywords.Add("while", TokenType.WHILE);
+	}
 
 	public Scanner(string source)
 	{
@@ -47,25 +69,108 @@ public class Scanner
 				if (Peek() == '/')
 				{
 					while (Peek() != '\n' && !IsAtEnd()) Advance();
-				} else {
+				} else if (Peek() == '*') // Block comments
+				{
+					do
+					{
+						if (Advance() == '\n') _line++;
+					}
+					while (Peek() != '*' && PeekNext() != '/' && !IsAtEnd());
+
+					if(IsAtEnd()) Program.Error(_line, "Unterminated block comment");
+
+				} else
+				{
 					AddToken(TokenType.SLASH);
 				}
 				break;
 			case ' ':
 			case '\r':
 			case '\t':
-				// Ignore whitespace.
-				break;
-
+				break; // Ignore Whitespaces
 			case '\n':
 				_line++;
 				break;
+			case '"': String(); break;
 
 
 			default:
-				Program.Error(_line, "Unexpected character.");
+				if (IsDigit(c))
+				{
+					Number();
+				} else if (IsAlpha(c))
+				{
+					Identifier();
+				} else
+				{
+					Program.Error(_line, "Unexpected character.");
+				}
+
 				break;
 		}
+	}
+
+	private bool IsDigit(char c)
+	{
+		return c is >= '0' and <= '9';
+	}
+
+	private bool IsAlpha(char c)
+	{
+		return c is (>= 'a' and <= 'z') or (>= 'A' and <= 'Z') or '_';
+	}
+
+	private void Identifier()
+	{
+		while (IsAlpha(Peek())) Advance();
+
+		var identifier = _source.Substring(_start, _current - _start);
+
+		if (Scanner.Keywords.TryGetValue(identifier, out var tokenType))
+		{
+			AddToken(tokenType);
+			return;
+		}
+
+		AddToken(TokenType.IDENTIFIER, _source.Substring(_start, _current - _start));
+	}
+
+	private void String()
+	{
+		while (Peek() != '"' && !IsAtEnd())
+		{
+			if (Peek() == '\n') _line++;
+			Advance();
+		}
+
+		if (IsAtEnd())
+		{
+			Program.Error(_line, "Unterminated string");
+			return;
+		}
+
+		Advance();
+		var value = _source.Substring(_start + 1, _current - _start - 2);
+		AddToken(TokenType.STRING, value);
+
+	}
+
+	private void Number()
+	{
+		while (IsDigit(Peek())) Advance();
+
+		if (Peek() == '.' && IsDigit(PeekNext())) Advance(); // consume '.'
+
+		while (IsDigit(Peek())) Advance();
+
+		AddToken(TokenType.NUMBER, Double.Parse(_source.Substring(_start, _current - _start)));
+	}
+
+	private char PeekNext()
+	{
+		return _current + 1 >= _source.Length
+			? '\0'
+			: _source[_current + 1];
 	}
 
 	private char Peek()

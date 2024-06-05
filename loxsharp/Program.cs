@@ -62,7 +62,6 @@ public class Program
 
 	private static void Run(string source)
 	{
-		Console.WriteLine(source);
 		var scanner = new Scanner(source);
 		var tokens = scanner.ScanTokens();
 		foreach (var token in tokens)
@@ -73,6 +72,6 @@ public class Program
 
 	private static void Report(int line, string where, string message)
 	{
-		Console.Error.Write($"[line: {line}] Error {where}: {message}");
+		Console.Error.Write($"[line: {line}] Error{where}: {message}\n");
 	}
 }
