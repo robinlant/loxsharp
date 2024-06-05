@@ -62,9 +62,13 @@ public class Program
 
 	private static void Run(string source)
 	{
-		// var scanner = new Scanner();
-		// var tokens = Scanner.scanTokens(source);
 		Console.WriteLine(source);
+		var scanner = new Scanner(source);
+		var tokens = scanner.ScanTokens();
+		foreach (var token in tokens)
+		{
+			Console.WriteLine(token.ToString());
+		}
 	}
 
 	private static void Report(int line, string where, string message)

@@ -1,5 +1,3 @@
-using System.Runtime.InteropServices.JavaScript;
-
 namespace loxsharp;
 
 public class Scanner
@@ -48,7 +46,7 @@ public class Scanner
 			case '/':
 				if (Peek() == '/')
 				{
-					while (Peek() != '\0' && !IsAtEnd()) Advance();
+					while (Peek() != '\n' && !IsAtEnd()) Advance();
 				} else {
 					AddToken(TokenType.SLASH);
 				}
@@ -91,7 +89,7 @@ public class Scanner
 
 	private void AddToken(TokenType type, object? literal = null)
 	{
-		var lexeme = _source.Substring(_start, _current);
+		var lexeme = _source.Substring(_start, _current - _start);
 		_tokens.Add(new Token(type, lexeme, literal, _line));
 	}
 
