@@ -72,18 +72,7 @@ public class Scanner
 				}
 				else if (Match('*')) // Block comments
 				{
-					while ((Peek() != '*' || PeekNext() != '/') && !IsAtEnd())
-					{
-						if (Advance() == '\n') _line++;
-					}
-
-					if (IsAtEnd())
-						Program.Error(_line, "Unterminated block comment");
-					else
-					{
-						Advance();
-						Advance();
-					}
+					BlockComment();
 				}
 				else
 				{
@@ -98,7 +87,6 @@ public class Scanner
 				_line++;
 				break;
 			case '"': String(); break;
-
 
 			default:
 				if (IsDigit(c))
@@ -160,7 +148,6 @@ public class Scanner
 		Advance();
 		var value = _source.Substring(_start + 1, _current - _start - 2);
 		AddToken(TokenType.STRING, value);
-
 	}
 
 	private void Number()
@@ -172,6 +159,25 @@ public class Scanner
 		while (IsDigit(Peek())) Advance();
 
 		AddToken(TokenType.NUMBER, Double.Parse(_source.Substring(_start, _current - _start)));
+	}
+
+	private void BlockComment()
+	{
+		var nest = 1;
+
+		while (nest != 0 && !IsAtEnd())
+		{
+			var c = Advance();
+			switch (c)
+			{
+				case '\n': _line++; break;
+				case '*': if (Match('/')) nest--; break;
+				case '/': if (Match('*')) nest++; break;
+			}
+		}
+
+		if (IsAtEnd())
+			Program.Error(_line, "Unterminated block comment");
 	}
 
 	private char PeekNext()
