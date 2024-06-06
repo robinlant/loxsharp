@@ -66,20 +66,26 @@ public class Scanner
 			case '>': AddToken(Match('=') ? TokenType.GREATER_EQUAL : TokenType.GREATER); break;
 			case '<': AddToken(Match('=') ? TokenType.LESS_EQUAL : TokenType.LESS); break;
 			case '/':
-				if (Peek() == '/')
+				if (Peek() == ('/'))
 				{
 					while (Peek() != '\n' && !IsAtEnd()) Advance();
-				} else if (Peek() == '*') // Block comments
+				}
+				else if (Match('*')) // Block comments
 				{
-					do
+					while ((Peek() != '*' || PeekNext() != '/') && !IsAtEnd())
 					{
 						if (Advance() == '\n') _line++;
 					}
-					while (Peek() != '*' && PeekNext() != '/' && !IsAtEnd());
 
-					if(IsAtEnd()) Program.Error(_line, "Unterminated block comment");
-
-				} else
+					if (IsAtEnd())
+						Program.Error(_line, "Unterminated block comment");
+					else
+					{
+						Advance();
+						Advance();
+					}
+				}
+				else
 				{
 					AddToken(TokenType.SLASH);
 				}
@@ -98,10 +104,12 @@ public class Scanner
 				if (IsDigit(c))
 				{
 					Number();
-				} else if (IsAlpha(c))
+				}
+				else if (IsAlpha(c))
 				{
 					Identifier();
-				} else
+				}
+				else
 				{
 					Program.Error(_line, "Unexpected character.");
 				}

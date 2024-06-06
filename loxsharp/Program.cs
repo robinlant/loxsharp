@@ -36,7 +36,7 @@ public class Program
 		if (!File.Exists(file))
 		{
 			Console.WriteLine(
-				$"Cant open the file: {file}." +
+				$"Cant open the file: {file}" +
 				$"\nFile doesnt exist.");
 			Environment.Exit(66);
 		}
