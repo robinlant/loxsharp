@@ -1,4 +1,4 @@
-namespace loxsharp;
+namespace loxsharp.Scanner;
 
 public class Scanner
 {
@@ -12,6 +12,7 @@ public class Scanner
 
 	static Scanner()
 	{
+		// Reserved Keywords
 		Keywords.Add("and", TokenType.AND);
 		Keywords.Add("class", TokenType.CLASS);
 		Keywords.Add("else", TokenType.ELSE);

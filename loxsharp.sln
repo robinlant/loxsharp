@@ -2,6 +2,10 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "loxsharp", "loxsharp\loxsharp.csproj", "{B7AC3932-4412-42D5-8BA4-BDE71EABFCA3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GenerateAst", "GenerateAst\GenerateAst.csproj", "{47B43BE6-915D-4144-9247-C60301B25B98}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{B1C521D7-5D0C-4BBB-87C0-E5FA40AB842E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +16,12 @@ Global
 		{B7AC3932-4412-42D5-8BA4-BDE71EABFCA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B7AC3932-4412-42D5-8BA4-BDE71EABFCA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{B7AC3932-4412-42D5-8BA4-BDE71EABFCA3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{47B43BE6-915D-4144-9247-C60301B25B98}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{47B43BE6-915D-4144-9247-C60301B25B98}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{47B43BE6-915D-4144-9247-C60301B25B98}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{47B43BE6-915D-4144-9247-C60301B25B98}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{47B43BE6-915D-4144-9247-C60301B25B98} = {B1C521D7-5D0C-4BBB-87C0-E5FA40AB842E}
 	EndGlobalSection
 EndGlobal

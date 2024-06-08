@@ -1,4 +1,4 @@
-namespace loxsharp;
+namespace loxsharp.Scanner;
 
 public enum TokenType
 {

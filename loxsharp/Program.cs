@@ -3,7 +3,7 @@ using Environment = System.Environment;
 
 namespace loxsharp;
 
-public class Program
+public static class Program
 {
 	private static bool _hadError = false;
 
@@ -62,7 +62,7 @@ public class Program
 
 	private static void Run(string source)
 	{
-		var scanner = new Scanner(source);
+		var scanner = new Scanner.Scanner(source);
 		var tokens = scanner.ScanTokens();
 		foreach (var token in tokens)
 		{
