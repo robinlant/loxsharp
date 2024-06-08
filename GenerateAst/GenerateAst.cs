@@ -36,7 +36,7 @@ public class GenerateAst
 	{
 		var textBuilder = new StringBuilder();
 		if (withNameSpaceAndUsing) textBuilder.AppendLine("namespace loxsharp.Parser;\n");
-		textBuilder.AppendLine($"public record {type.Name}(Expr Left, Token Token, Expr Right) : {_baseName}");
+		textBuilder.AppendLine($"public record {type.Name}({string.Join(", ", type.Properties)}) : {_baseName}");
 		textBuilder.AppendLine("{");
 		textBuilder.AppendLine("   " + "public override T Accept<T>(ISyntaxTreeVisitor<T> visitor)");
 		textBuilder.AppendLine("   " + "{");

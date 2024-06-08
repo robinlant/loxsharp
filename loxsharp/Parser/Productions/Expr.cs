@@ -15,7 +15,7 @@ public record Binary(Expr Left, Token Token, Expr Right) : Expr
    }
 }
 
-public record Grouping(Expr Left, Token Token, Expr Right) : Expr
+public record Grouping(Expr Expression) : Expr
 {
    public override T Accept<T>(ISyntaxTreeVisitor<T> visitor)
    {
@@ -23,7 +23,7 @@ public record Grouping(Expr Left, Token Token, Expr Right) : Expr
    }
 }
 
-public record Literal(Expr Left, Token Token, Expr Right) : Expr
+public record Literal(Object Value) : Expr
 {
    public override T Accept<T>(ISyntaxTreeVisitor<T> visitor)
    {
@@ -31,7 +31,7 @@ public record Literal(Expr Left, Token Token, Expr Right) : Expr
    }
 }
 
-public record Unary(Expr Left, Token Token, Expr Right) : Expr
+public record Unary(Token Token, Expr Right) : Expr
 {
    public override T Accept<T>(ISyntaxTreeVisitor<T> visitor)
    {

@@ -2,7 +2,7 @@
 
 namespace loxsharp.Parser;
 
-public interface ISyntaxTreeVisitor<out T>
+public interface ISyntaxTreeVisitor<T>
 {
     T VisitBinary(Binary binary);
 
