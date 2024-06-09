@@ -42,6 +42,6 @@ public class AstPrinter : ISyntaxTreeVisitor<String>
 				.Append(i.Accept(this));
 		}
 
-		return strBuilder.ToString();
+		return strBuilder.Append(')').ToString();
 	}
 }
