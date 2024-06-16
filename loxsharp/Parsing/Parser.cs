@@ -30,32 +30,24 @@ public class Parser
 
 	private Expr Comma()
 	{
-		var expr = Conditional();
-
-		while (Match(TokenType.COMMA))
-		{
-			expr = new Binary(expr, Previous(), Conditional());
-		}
-
-		return expr;
+		return ParseBinary(Conditional,
+			x => new Binary(x, Previous(), Conditional()),
+			TokenType.COMMA);
 	}
 
 	private Expr Conditional()
 	{
 		var expr = Expression();
 
-		if (Match(TokenType.QUESTION))
-		{
-			var exprIfTrue = Conditional();
+		if (!Match(TokenType.QUESTION)) return expr;
 
-			Consume(TokenType.COLON, "Expect :");
+		var exprIfTrue = Conditional();
 
-			var exprIfFalse = Conditional();
+		Consume(TokenType.COLON, "Expect :");
 
-			expr = new Conditional(expr, exprIfTrue, exprIfFalse);
-		}
+		var exprIfFalse = Conditional();
 
-		return expr;
+		return new Conditional(expr, exprIfTrue, exprIfFalse);
 	}
 
 	private Expr Expression()
@@ -65,55 +57,33 @@ public class Parser
 
 	private Expr Equality()
 	{
-		var expr = Comparison();
-
-		while (Match(TokenType.BANG_EQUAL,TokenType.EQUAL_EQUAL))
-		{
-			expr = new Binary(expr, Previous(), Comparison());
-		}
-
-		return expr;
+		return ParseBinary(Comparison,
+			x => new Binary(x, Previous(), Comparison()),
+			TokenType.BANG_EQUAL, TokenType.EQUAL_EQUAL);
 	}
 
 	private Expr Comparison()
 	{
-		var expr = Term();
-
-		while (Match(TokenType.GREATER,
-			       TokenType.GREATER_EQUAL,
-			       TokenType.LESS,
-			       TokenType.LESS_EQUAL))
-		{
-			expr = new Binary(expr, Previous(), Term());
-		}
-
-		return expr;
+		return ParseBinary(Term,
+			x => new Binary(x, Previous(), Term()),
+			TokenType.GREATER,
+			TokenType.GREATER_EQUAL,
+			TokenType.LESS,
+			TokenType.LESS_EQUAL);
 	}
 
 	private Expr Term()
 	{
-		var expr = Factor();
-
-		while (Match(TokenType.MINUS,
-			       TokenType.PLUS))
-		{
-			expr = new Binary(expr, Previous(), Factor());
-		}
-
-		return expr;
+		return ParseBinary(Factor,
+			x => new Binary(x, Previous(), Factor()),
+			TokenType.MINUS, TokenType.PLUS);
 	}
 
 	private Expr Factor()
 	{
-		var expr = Unary();
-
-		while (Match(TokenType.STAR,
-			       TokenType.SLASH))
-		{
-			expr = new Binary(expr, Previous(), Unary());
-		}
-
-		return expr;
+		return ParseBinary(Unary,
+			x => new Binary(x, Previous(), Unary()),
+			TokenType.STAR, TokenType.SLASH);
 	}
 
 	private Expr Unary()
@@ -140,6 +110,20 @@ public class Parser
 		}
 
 		throw Error(Peek(), "Expect Expression.");
+	}
+
+	private Expr ParseBinary(Func<Expr> rule, Func<Expr,Expr> createNested, params TokenType[] types)
+	{
+		if (Check(types)) throw Error(Peek(), "Left operand is missing.");
+
+		var expr = rule();
+
+		while (Match(types))
+		{
+			expr = createNested(expr);
+		}
+
+		return expr;
 	}
 
 	// checks if token has one of given types
@@ -189,6 +173,11 @@ public class Parser
 	private bool IsAtEnd()
 	{
 		return Peek().Type == TokenType.EOF;
+	}
+
+	private bool Check(params TokenType[] types)
+	{
+		return types.Any(x => x == Peek().Type);
 	}
 
 	private Token Peek()
