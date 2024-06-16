@@ -2,7 +2,7 @@
 
 namespace loxsharp.Parsing;
 
-public interface ISyntaxTreeVisitor<T>
+public interface ISyntaxTreeVisitor<out T>
 {
     T VisitBinary(Binary binary);
 
@@ -11,4 +11,6 @@ public interface ISyntaxTreeVisitor<T>
     T VisitLiteral(Literal literal);
 
     T VisitUnary(Unary unary);
+
+    T VisitConditional(Conditional conditional);
 }

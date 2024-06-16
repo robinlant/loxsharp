@@ -30,11 +30,29 @@ public class Parser
 
 	private Expr Comma()
 	{
-		var expr = Expression();
+		var expr = Conditional();
 
 		while (Match(TokenType.COMMA))
 		{
-			expr = new Binary(expr, Previous(), Expression());
+			expr = new Binary(expr, Previous(), Conditional());
+		}
+
+		return expr;
+	}
+
+	private Expr Conditional()
+	{
+		var expr = Expression();
+
+		if (Match(TokenType.QUESTION))
+		{
+			var exprIfTrue = Conditional();
+
+			Consume(TokenType.COLON, "Expect :");
+
+			var exprIfFalse = Conditional();
+
+			expr = new Conditional(expr, exprIfTrue, exprIfFalse);
 		}
 
 		return expr;
@@ -121,7 +139,7 @@ public class Parser
 			return new Grouping(expr);
 		}
 
-		throw Error(Peek(), "Expression is expected.");
+		throw Error(Peek(), "Expect Expression.");
 	}
 
 	// checks if token has one of given types

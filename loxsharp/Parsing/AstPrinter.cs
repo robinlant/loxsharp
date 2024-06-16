@@ -1,13 +1,22 @@
+using System.Linq.Expressions;
 using System.Text;
 using loxsharp.Parsing.Productions;
 
 namespace loxsharp.Parsing;
 
-public class AstPrinter : ISyntaxTreeVisitor<String>
+public class AstPrinter : ISyntaxTreeVisitor<string>
 {
 	public string VisitBinary(Binary binary)
 	{
-		return Parenthesize(binary.Token.Lexeme, binary.Left, binary.Right);
+		var strBuilder = new StringBuilder("( ")
+			.Append(binary.Left.Accept(this))
+			.Append(' ')
+			.Append(binary.Token.Lexeme)
+			.Append(' ')
+			.Append(binary.Right.Accept(this))
+			.Append(" )");
+
+		return strBuilder.ToString();
 	}
 
 	public string VisitGrouping(Grouping grouping)
@@ -20,7 +29,6 @@ public class AstPrinter : ISyntaxTreeVisitor<String>
 		if (literal.Value is null) return "nil";
 
 		return literal.Value.ToString() ?? string.Empty;
-
 	}
 
 	public string VisitUnary(Unary unary)
@@ -28,11 +36,25 @@ public class AstPrinter : ISyntaxTreeVisitor<String>
 		return Parenthesize(unary.Token.Lexeme, unary.Right);
 	}
 
+	public string VisitConditional(Conditional conditional)
+	{
+		var strBuilder = new StringBuilder("( ")
+			.Append("ternary ")
+			.Append(Parenthesize("condition", conditional.Condition))
+			.Append(" ? ")
+			.Append(Parenthesize("", conditional.ValueIfTrue))
+			.Append(" : ")
+			.Append(Parenthesize("", conditional.ValueIfFalse))
+			.Append(" )");
+
+		return strBuilder.ToString();
+	}
+
 	private string Parenthesize(string name, params Expr[] exprs)
 	{
 		var strBuilder = new StringBuilder();
 
-		strBuilder.Append('(')
+		strBuilder.Append("( ")
 			.Append(name);
 
 		foreach (var i in exprs)
@@ -41,6 +63,6 @@ public class AstPrinter : ISyntaxTreeVisitor<String>
 				.Append(i.Accept(this));
 		}
 
-		return strBuilder.Append(')').ToString();
+		return strBuilder.Append(" )").ToString();
 	}
 }

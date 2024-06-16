@@ -69,7 +69,7 @@ public class GenerateAst
 			textStrBuilder.AppendLine("namespace loxsharp.Parsing;\n");
 		}
 
-		textStrBuilder.AppendLine("public interface ISyntaxTreeVisitor<T>");
+		textStrBuilder.AppendLine("public interface ISyntaxTreeVisitor<out T>");
 		textStrBuilder.AppendLine("{");
 
 		foreach (var i in _types)

@@ -68,7 +68,7 @@ public static class Program
 		var parser = new Parser(tokens, Error);
 		foreach(var i in tokens) Console.WriteLine(i);
 		var expr = parser.Parse();
-		Console.WriteLine(expr.Accept(new AstPrinter()));
+		Console.WriteLine(expr?.Accept(new AstPrinter()));
 	}
 
 	private static void Report(int line, string where, string message)
