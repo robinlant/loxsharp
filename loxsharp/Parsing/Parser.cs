@@ -20,12 +20,24 @@ public class Parser
 	{
 		try
 		{
-			return Expression();
+			return Comma();
 		}
 		catch (ParseException exception)
 		{
 			return null;
 		}
+	}
+
+	private Expr Comma()
+	{
+		var expr = Expression();
+
+		while (Match(TokenType.COMMA))
+		{
+			expr = new Binary(expr, Previous(), Expression());
+		}
+
+		return expr;
 	}
 
 	private Expr Expression()
