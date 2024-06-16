@@ -1,7 +1,7 @@
 using System.Text;
-using loxsharp.Parser.Productions;
+using loxsharp.Parsing.Productions;
 
-namespace loxsharp.Parser;
+namespace loxsharp.Parsing;
 
 public class TranslatorToRPN : ISyntaxTreeVisitor<string>
 {

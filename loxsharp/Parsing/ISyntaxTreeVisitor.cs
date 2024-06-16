@@ -1,6 +1,6 @@
-﻿using loxsharp.Parser.Productions;
+﻿using loxsharp.Parsing.Productions;
 
-namespace loxsharp.Parser;
+namespace loxsharp.Parsing;
 
 public interface ISyntaxTreeVisitor<T>
 {

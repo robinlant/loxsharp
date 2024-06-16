@@ -1,7 +1,7 @@
 using System.Text;
-using loxsharp.Parser.Productions;
+using loxsharp.Parsing.Productions;
 
-namespace loxsharp.Parser;
+namespace loxsharp.Parsing;
 
 public class AstPrinter : ISyntaxTreeVisitor<String>
 {
@@ -9,7 +9,6 @@ public class AstPrinter : ISyntaxTreeVisitor<String>
 	{
 		return Parenthesize(binary.Token.Lexeme, binary.Left, binary.Right);
 	}
-
 
 	public string VisitGrouping(Grouping grouping)
 	{
@@ -20,7 +19,7 @@ public class AstPrinter : ISyntaxTreeVisitor<String>
 	{
 		if (literal.Value is null) return "nil";
 
-		return literal.Value.ToString();
+		return literal.Value.ToString() ?? string.Empty;
 
 	}
 

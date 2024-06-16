@@ -1,4 +1,4 @@
-namespace loxsharp.Scanner;
+namespace loxsharp.Scanning;
 
 public class Token
 {

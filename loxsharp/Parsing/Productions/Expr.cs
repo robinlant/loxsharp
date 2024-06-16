@@ -1,6 +1,6 @@
-﻿using loxsharp.Scanner;
+﻿using loxsharp.Scanning;
 
-namespace loxsharp.Parser.Productions;
+namespace loxsharp.Parsing.Productions;
 
 public abstract record Expr
 {
@@ -23,7 +23,7 @@ public record Grouping(Expr Expression) : Expr
    }
 }
 
-public record Literal(Object Value) : Expr
+public record Literal(object? Value) : Expr
 {
    public override T Accept<T>(ISyntaxTreeVisitor<T> visitor)
    {

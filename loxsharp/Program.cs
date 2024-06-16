@@ -1,5 +1,6 @@
 ﻿using System.Text;
-using Environment = System.Environment;
+using loxsharp.Parsing;
+using loxsharp.Scanning;
 
 namespace loxsharp;
 
@@ -25,7 +26,7 @@ public static class Program
 		}
 	}
 
-	public static void Error(int line, string message)
+	private static void Error(int line, string message)
 	{
 		Report(line, "", message);
 		_hadError = true;
@@ -62,12 +63,12 @@ public static class Program
 
 	private static void Run(string source)
 	{
-		var scanner = new Scanner.Scanner(source);
+		var scanner = new Scanner(source, Error);
 		var tokens = scanner.ScanTokens();
-		foreach (var token in tokens)
-		{
-			Console.WriteLine(token.ToString());
-		}
+		var parser = new Parser(tokens, Error);
+		foreach(var i in tokens) Console.WriteLine(i);
+		var expr = parser.Parse();
+		Console.WriteLine(expr.Accept(new AstPrinter()));
 	}
 
 	private static void Report(int line, string where, string message)

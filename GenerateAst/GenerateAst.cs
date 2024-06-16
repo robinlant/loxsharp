@@ -35,7 +35,7 @@ public class GenerateAst
 	private string GenerateType(TypeInformation type ,bool withNameSpaceAndUsing = false)
 	{
 		var textBuilder = new StringBuilder();
-		if (withNameSpaceAndUsing) textBuilder.AppendLine("namespace loxsharp.Parser;\n");
+		if (withNameSpaceAndUsing) textBuilder.AppendLine("namespace loxsharp.Parsing;\n");
 		textBuilder.AppendLine($"public record {type.Name}({string.Join(", ", type.Properties)}) : {_baseName}");
 		textBuilder.AppendLine("{");
 		textBuilder.AppendLine("   " + "public override T Accept<T>(ISyntaxTreeVisitor<T> visitor)");
@@ -50,8 +50,8 @@ public class GenerateAst
 	private string GenerateMainClass()
 	{
 		var textBuilder = new StringBuilder();
-		textBuilder.AppendLine("using loxsharp.Scanner;\n");
-		textBuilder.AppendLine("namespace loxsharp.Parser.Productions;\n");
+		textBuilder.AppendLine("using loxsharp.Scanning;\n");
+		textBuilder.AppendLine("namespace loxsharp.Parsing.Productions;\n");
 		textBuilder.AppendLine($"public abstract record {_baseName}");
 		textBuilder.AppendLine("{");
 		textBuilder.AppendLine("    "+"public abstract T Accept<T>(ISyntaxTreeVisitor<T> visitor);");
@@ -65,8 +65,8 @@ public class GenerateAst
 		var textStrBuilder = new StringBuilder();
 		if (withNameSpaceAndUsing)
 		{
-			textStrBuilder.AppendLine("using loxsharp.Parser.Productions;\n");
-			textStrBuilder.AppendLine("namespace loxsharp.Parser;\n");
+			textStrBuilder.AppendLine("using loxsharp.Parsing.Productions;\n");
+			textStrBuilder.AppendLine("namespace loxsharp.Parsing;\n");
 		}
 
 		textStrBuilder.AppendLine("public interface ISyntaxTreeVisitor<T>");

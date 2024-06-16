@@ -1,4 +1,4 @@
-namespace loxsharp.Scanner;
+namespace loxsharp.Scanning;
 
 public class Scanner
 {
@@ -9,6 +9,8 @@ public class Scanner
 	private int _start;
 	private int _current;
 	private int _line = 1;
+
+	private readonly Action<int, string> _reportError;
 
 	static Scanner()
 	{
@@ -31,9 +33,10 @@ public class Scanner
 		Keywords.Add("while", TokenType.WHILE);
 	}
 
-	public Scanner(string source)
+	public Scanner(string source, Action<int,string> reportError)
 	{
 		_source = source;
+		_reportError = reportError;
 	}
 
 	public List<Token> ScanTokens()
@@ -100,7 +103,7 @@ public class Scanner
 				}
 				else
 				{
-					Program.Error(_line, "Unexpected character.");
+					_reportError(_line, "Unexpected character.");
 				}
 
 				break;
@@ -142,7 +145,7 @@ public class Scanner
 
 		if (IsAtEnd())
 		{
-			Program.Error(_line, "Unterminated string");
+			_reportError(_line, "Unterminated string");
 			return;
 		}
 
@@ -178,7 +181,7 @@ public class Scanner
 		}
 
 		if (IsAtEnd())
-			Program.Error(_line, "Unterminated block comment");
+			_reportError(_line, "Unterminated block comment");
 	}
 
 	private char PeekNext()
