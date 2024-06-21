@@ -54,6 +54,7 @@ public class Interpreter : ISyntaxTreeVisitor<object?>
 				return (double)left! - (double)right!;
 			case TokenType.SLASH:
 				CheckNumberOperands(binary.Token, left, right);
+				if (right is double and 0) throw new RuntimeException(binary.Token, "Division by zero is prohibited.");
 				return (double)left! / (double)right!;
 			case TokenType.STAR:
 				CheckNumberOperands(binary.Token, left, right);
@@ -127,7 +128,7 @@ public class Interpreter : ISyntaxTreeVisitor<object?>
 	private void CheckNumberOperands(Token token, params object?[] operands)
 	{
 		if (CheckTypes(typeof(double), operands)) return;
-		throw new RuntimeException(token, "Operand must be a number.+");
+		throw new RuntimeException(token, "Operand must be a number.");
 	}
 
 	private bool IsEqual(object? a, object? b)
