@@ -12,5 +12,5 @@ new GenerateAst.GenerateAst(outputDir, "Expr", new[]
 	"Grouping : Expr Expression",
 	"Literal  : object? Value",
 	"Unary    : Token Token, Expr Right",
-	"Conditional : Expr Condition, Expr ValueIfTrue, Expr ValueIfFalse"
+	"Conditional : Expr Condition, Expr ExprIfTrue, Expr ExprIfFalse"
 }).Generate();

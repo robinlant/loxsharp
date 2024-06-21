@@ -39,7 +39,7 @@ public record Unary(Token Token, Expr Right) : Expr
    }
 }
 
-public record Conditional(Expr Condition, Expr ValueIfTrue, Expr ValueIfFalse) : Expr
+public record Conditional(Expr Condition, Expr ExprIfTrue, Expr ExprIfFalse) : Expr
 {
    public override T Accept<T>(ISyntaxTreeVisitor<T> visitor)
    {

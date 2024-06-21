@@ -112,9 +112,11 @@ public class Parser
 		throw Error(Peek(), "Expect Expression.");
 	}
 
-	private Expr ParseBinary(Func<Expr> rule, Func<Expr,Expr> createNested, params TokenType[] types)
+	private Expr ParseBinary(Func<Expr> rule, Func<Expr, Expr> createNested, params TokenType[] types)
 	{
-		if (Check(types)) throw Error(Peek(), "Left operand is missing.");
+		// ambiguous tokens: MINUS
+		if (!Check(TokenType.MINUS) && Check(types))
+			throw Error(Peek(), "Left operand is missing.");
 
 		var expr = rule();
 

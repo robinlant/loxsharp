@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using loxsharp.Interpreting;
 using loxsharp.Parsing;
 using loxsharp.Scanning;
 
@@ -24,6 +25,11 @@ public static class Program
 				RunPrompt();
 				break;
 		}
+	}
+
+	private static void RuntimeError(RuntimeException exception)
+	{
+		Error(exception.Token.Line, exception.Message);
 	}
 
 	private static void Error(int line, string message)
@@ -66,9 +72,10 @@ public static class Program
 		var scanner = new Scanner(source, Error);
 		var tokens = scanner.ScanTokens();
 		var parser = new Parser(tokens, Error);
-		foreach(var i in tokens) Console.WriteLine(i);
 		var expr = parser.Parse();
 		Console.WriteLine(expr?.Accept(new AstPrinter()));
+		var interpreter = new Interpreter(RuntimeError);
+		interpreter.Interpret(expr!);
 	}
 
 	private static void Report(int line, string where, string message)

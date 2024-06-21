@@ -42,9 +42,9 @@ public class AstPrinter : ISyntaxTreeVisitor<string>
 			.Append("ternary ")
 			.Append(Parenthesize("condition", conditional.Condition))
 			.Append(" ? ")
-			.Append(Parenthesize("", conditional.ValueIfTrue))
+			.Append(Parenthesize("", conditional.ExprIfFalse))
 			.Append(" : ")
-			.Append(Parenthesize("", conditional.ValueIfFalse))
+			.Append(Parenthesize("", conditional.ExprIfFalse))
 			.Append(" )");
 
 		return strBuilder.ToString();
