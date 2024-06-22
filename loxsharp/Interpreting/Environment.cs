@@ -6,18 +6,27 @@ public class Environment
 {
 	private readonly Dictionary<string, object?> _dictionary = new Dictionary<string, object?>();
 
-	public void Define(string name, object? value = null)
+	public void Define(Token token, object? value = null)
 	{
-		if (_dictionary.TryAdd(name, value))
-			_dictionary[name] = value;
+		if (_dictionary.TryAdd(token.Lexeme, value)) return;
+
+		throw new RuntimeException(token, $"Variable {token.Lexeme} already exist.");
 	}
 
-	public object? Get(Token name)
+	public void Assign(Token token, object? value)
 	{
-		var isSuccess = _dictionary.TryGetValue(name.Lexeme, out var result);
+		if (!_dictionary.ContainsKey(token.Lexeme))
+			throw new RuntimeException(token, $"Variable {token.Lexeme} isn't declared");
+
+		_dictionary[token.Lexeme] = value;
+	}
+
+	public object? Get(Token token)
+	{
+		var isSuccess = _dictionary.TryGetValue(token.Lexeme, out var result);
 
 		if (isSuccess) return result;
 
-		throw new RuntimeException(name, "Undefined variable '" + name.Lexeme + "'.");
+		throw new RuntimeException(token, "Undefined variable '" + token.Lexeme + "'.");
 	}
 }

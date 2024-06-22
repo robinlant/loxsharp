@@ -38,7 +38,11 @@ public class Interpreter : ISyntaxTreeVisitor<object?>, IStatementVisitor<Interp
 
 	public object? VisitAssign(Assign assign)
 	{
-		throw new NotImplementedException();
+		var value = assign.Value.Accept(this);
+
+		_environment.Assign(assign.Token,value);
+
+		return value;
 	}
 
 	public object? VisitBinary(Binary binary)
@@ -201,7 +205,7 @@ public class Interpreter : ISyntaxTreeVisitor<object?>, IStatementVisitor<Interp
 	{
 		var init = var.Init?.Accept(this);
 
-		_environment.Define(var.Token.Lexeme, init);
+		_environment.Define(var.Token, init);
 
 		return new Nothing();
 	}

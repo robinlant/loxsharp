@@ -64,7 +64,7 @@ public class Parser
 
 	private Stmt ExpressionStatement()
 	{
-		var expression = Comma();
+		var expression = Expression();
 
 		Consume(TokenType.SEMICOLON, "Expect ';' after value.");
 
@@ -73,7 +73,7 @@ public class Parser
 
 	private Stmt PrintStatement()
 	{
-		var expression = Comma();
+		var expression = Expression();
 
 		Consume(TokenType.SEMICOLON, "Expect ';' after value.");
 
@@ -82,7 +82,26 @@ public class Parser
 
 	private Expr Expression()
 	{
+		return Assignment();
+	}
+
+	//TODO pint identifier will trigger assignment and throw an exception
+	private Expr Assignment()
+	{
+		if (Peek().Type == TokenType.IDENTIFIER
+		    && PeekNext().Type == TokenType.EQUAL)
+		{
+			var token = Advance();
+
+			Consume(TokenType.EQUAL, "Expect = after an identifier in assignment expression.");
+
+			var value = Assignment();
+
+			return new Assign(token, value);
+		}
+
 		return Comma();
+
 	}
 
 	private Expr Comma()
@@ -238,6 +257,13 @@ public class Parser
 	private Token Peek()
 	{
 		return _tokens[_current];
+	}
+
+	private Token PeekNext()
+	{
+		return !IsAtEnd()
+			? _tokens[_current + 1]
+			: Peek();
 	}
 
 	private Token Previous()
