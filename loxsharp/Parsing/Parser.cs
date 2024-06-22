@@ -88,20 +88,18 @@ public class Parser
 	//TODO pint identifier will trigger assignment and throw an exception
 	private Expr Assignment()
 	{
-		if (Peek().Type == TokenType.IDENTIFIER
-		    && PeekNext().Type == TokenType.EQUAL)
-		{
-			var token = Advance();
+		var token = Peek();
+		var expr = Comma();
 
-			Consume(TokenType.EQUAL, "Expect = after an identifier in assignment expression.");
+		if (!Match(TokenType.EQUAL)) return expr;
+		var equals = Previous();
+		var value = Assignment();
 
-			var value = Assignment();
+		if (expr is Variable) return new Assign(token, value);
 
-			return new Assign(token, value);
-		}
+		Error(equals, "Invalid assignment target.");
 
-		return Comma();
-
+		return null!;
 	}
 
 	private Expr Comma()
@@ -257,13 +255,6 @@ public class Parser
 	private Token Peek()
 	{
 		return _tokens[_current];
-	}
-
-	private Token PeekNext()
-	{
-		return !IsAtEnd()
-			? _tokens[_current + 1]
-			: Peek();
 	}
 
 	private Token Previous()
