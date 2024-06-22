@@ -7,6 +7,14 @@ public abstract record Expr
     public abstract T Accept<T>(ISyntaxTreeVisitor<T> visitor);
 }
 
+public record Assign(Token Token, Expr Value) : Expr
+{
+   public override T Accept<T>(ISyntaxTreeVisitor<T> visitor)
+   {
+      return visitor.VisitAssign(this);
+   }
+}
+
 public record Binary(Expr Left, Token Token, Expr Right) : Expr
 {
    public override T Accept<T>(ISyntaxTreeVisitor<T> visitor)
@@ -44,6 +52,14 @@ public record Conditional(Expr Condition, Expr ExprIfTrue, Expr ExprIfFalse) : E
    public override T Accept<T>(ISyntaxTreeVisitor<T> visitor)
    {
       return visitor.VisitConditional(this);
+   }
+}
+
+public record Variable(Token Token) : Expr
+{
+   public override T Accept<T>(ISyntaxTreeVisitor<T> visitor)
+   {
+      return visitor.VisitVariable(this);
    }
 }
 

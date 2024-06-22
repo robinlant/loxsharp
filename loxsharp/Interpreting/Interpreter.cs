@@ -2,30 +2,43 @@ using System.Linq.Expressions;
 using loxsharp.Parsing;
 using loxsharp.Parsing.Productions;
 using loxsharp.Scanning;
+using Expression = loxsharp.Parsing.Productions.Expression;
 
 namespace loxsharp.Interpreting;
 
-public class Interpreter : ISyntaxTreeVisitor<object?>
+public class Interpreter : ISyntaxTreeVisitor<object?>, IStatementVisitor<Interpreter.Nothing?>
 {
+	public class Nothing{}
+
 	private readonly Action<RuntimeException> _error;
+
+	private readonly Environment _environment = new Environment();
 
 	public Interpreter(Action<RuntimeException> error)
 	{
 		_error = error;
 	}
 
-	public void Interpret(Expr expression)
+	public void Interpret(List<Stmt> statements)
 	{
 		try
 		{
-			var value = expression.Accept(this);
-			Console.WriteLine(Stringify(value));
+			foreach (var i in statements)
+			{
+				// execute
+				i.Accept(this);
+			}
 
 		}
 		catch (RuntimeException e)
 		{
 			_error(e);
 		}
+	}
+
+	public object? VisitAssign(Assign assign)
+	{
+		throw new NotImplementedException();
 	}
 
 	public object? VisitBinary(Binary binary)
@@ -106,8 +119,6 @@ public class Interpreter : ISyntaxTreeVisitor<object?>
 			default:
 				return null;
 		}
-
-		;
 	}
 
 	public object? VisitConditional(Conditional conditional)
@@ -117,6 +128,11 @@ public class Interpreter : ISyntaxTreeVisitor<object?>
 		return IsTruthy(condition)
 			? conditional.ExprIfTrue.Accept(this)
 			: conditional.ExprIfFalse.Accept(this);
+	}
+
+	public object? VisitVariable(Variable variable)
+	{
+		return _environment.Get(variable.Token);
 	}
 
 	private bool IsTruthy(object? parameter)
@@ -163,5 +179,30 @@ public class Interpreter : ISyntaxTreeVisitor<object?>
 		}
 
 		return obj!.ToString() ?? "";
+	}
+
+	public Nothing VisitExpression(Expression expression)
+	{
+		expression.Expr.Accept(this);
+
+		return new Nothing();
+	}
+
+	public Nothing VisitPrint(Print print)
+	{
+		var value = print.Expr.Accept(this);
+
+		Console.WriteLine(Stringify(value));
+
+		return new Nothing();
+	}
+
+	public Nothing VisitVar(Var var)
+	{
+		var init = var.Init?.Accept(this);
+
+		_environment.Define(var.Token.Lexeme, init);
+
+		return new Nothing();
 	}
 }

@@ -16,16 +16,73 @@ public class Parser
 		_reportError = reportError;
 	}
 
-	public Expr Parse()
+	public List<Stmt> Parse()
+	{
+		var statements = new List<Stmt>();
+
+		while (!IsAtEnd())
+		{
+			statements.Add(Declaration());
+		}
+
+		return statements;
+	}
+
+	private Stmt Declaration()
 	{
 		try
 		{
-			return Comma();
+			return Match(TokenType.VAR) ? VarDeclaration() : Statement();
 		}
-		catch (ParseException exception)
+		catch (ParseException e)
 		{
-			return null;
+			Synchronize();
+			return null!;
 		}
+	}
+
+	private Stmt VarDeclaration()
+	{
+		var name = Consume(TokenType.IDENTIFIER, "Expect variable name.");
+
+		Expr? init = null;
+		if (Match(TokenType.EQUAL))
+		{
+			init = Expression();
+		}
+
+		Consume(TokenType.SEMICOLON, "Expect ';' after variable declaration.");
+		return new Var(name, init);
+	}
+
+	private Stmt Statement()
+	{
+		if (Match(TokenType.PRINT)) return PrintStatement();
+
+		return ExpressionStatement();
+	}
+
+	private Stmt ExpressionStatement()
+	{
+		var expression = Comma();
+
+		Consume(TokenType.SEMICOLON, "Expect ';' after value.");
+
+		return new Expression(expression);
+	}
+
+	private Stmt PrintStatement()
+	{
+		var expression = Comma();
+
+		Consume(TokenType.SEMICOLON, "Expect ';' after value.");
+
+		return new Print(expression);
+	}
+
+	private Expr Expression()
+	{
+		return Comma();
 	}
 
 	private Expr Comma()
@@ -37,7 +94,7 @@ public class Parser
 
 	private Expr Conditional()
 	{
-		var expr = Expression();
+		var expr = Equality();
 
 		if (!Match(TokenType.QUESTION)) return expr;
 
@@ -48,11 +105,6 @@ public class Parser
 		var exprIfFalse = Conditional();
 
 		return new Conditional(expr, exprIfTrue, exprIfFalse);
-	}
-
-	private Expr Expression()
-	{
-		return Equality();
 	}
 
 	private Expr Equality()
@@ -98,6 +150,7 @@ public class Parser
 		if (Match(TokenType.FALSE)) return new Literal(false);
 		if (Match(TokenType.TRUE)) return new Literal(true);
 		if (Match(TokenType.NIL)) return new Literal(null);
+		if (Match(TokenType.IDENTIFIER)) return new Variable(Previous());
 
 		if (Match(TokenType.NUMBER, TokenType.STRING)) {
 			return new Literal(Previous().Literal);

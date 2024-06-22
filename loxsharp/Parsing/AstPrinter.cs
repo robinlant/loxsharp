@@ -6,6 +6,11 @@ namespace loxsharp.Parsing;
 
 public class AstPrinter : ISyntaxTreeVisitor<string>
 {
+	public string VisitAssign(Assign assign)
+	{
+		throw new NotImplementedException();
+	}
+
 	public string VisitBinary(Binary binary)
 	{
 		var strBuilder = new StringBuilder("( ")
@@ -48,6 +53,11 @@ public class AstPrinter : ISyntaxTreeVisitor<string>
 			.Append(" )");
 
 		return strBuilder.ToString();
+	}
+
+	public string VisitVariable(Variable variable)
+	{
+		throw new NotImplementedException();
 	}
 
 	private string Parenthesize(string name, params Expr[] exprs)

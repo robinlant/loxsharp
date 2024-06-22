@@ -8,9 +8,11 @@ var outputDir = args[0];
 
 new GenerateAst.GenerateAst(outputDir, "Expr", new[]
 {
+	"Assign   : Token Token, Expr value",
 	"Binary   : Expr Left, Token Token, Expr Right",
 	"Grouping : Expr Expression",
 	"Literal  : object? Value",
 	"Unary    : Token Token, Expr Right",
-	"Conditional : Expr Condition, Expr ExprIfTrue, Expr ExprIfFalse"
+	"Conditional : Expr Condition, Expr ExprIfTrue, Expr ExprIfFalse",
+	"Variable : Token Token"
 }).Generate();

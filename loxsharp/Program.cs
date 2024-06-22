@@ -2,6 +2,7 @@
 using loxsharp.Interpreting;
 using loxsharp.Parsing;
 using loxsharp.Scanning;
+using Environment = System.Environment;
 
 namespace loxsharp;
 
@@ -72,10 +73,9 @@ public static class Program
 		var scanner = new Scanner(source, Error);
 		var tokens = scanner.ScanTokens();
 		var parser = new Parser(tokens, Error);
-		var expr = parser.Parse();
-		Console.WriteLine(expr?.Accept(new AstPrinter()));
+		var stmts = parser.Parse();
 		var interpreter = new Interpreter(RuntimeError);
-		interpreter.Interpret(expr!);
+		interpreter.Interpret(stmts);
 	}
 
 	private static void Report(int line, string where, string message)
