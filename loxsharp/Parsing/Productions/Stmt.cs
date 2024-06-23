@@ -30,3 +30,11 @@ public record Var(Token Token, Expr? Init) : Stmt
 		return visitor.VisitVar(this);
 	}
 }
+
+public record Block(List<Stmt> Statements) : Stmt
+{
+	public override T Accept<T>(IStatementVisitor<T> visitor)
+	{
+		return visitor.VisitBlock(this);
+	}
+}

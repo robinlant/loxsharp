@@ -9,4 +9,6 @@ public interface IStatementVisitor<out T>
 	T VisitPrint(Print print);
 
 	T VisitVar(Var var);
+
+	T VisitBlock(Block block);
 }

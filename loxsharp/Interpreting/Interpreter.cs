@@ -12,7 +12,7 @@ public class Interpreter : ISyntaxTreeVisitor<object?>, IStatementVisitor<Interp
 
 	private readonly Action<RuntimeException> _error;
 
-	private readonly Environment _environment = new Environment();
+	private Environment _environment = new Environment();
 
 	public Interpreter(Action<RuntimeException> error)
 	{
@@ -208,5 +208,29 @@ public class Interpreter : ISyntaxTreeVisitor<object?>, IStatementVisitor<Interp
 		_environment.Define(var.Token, init);
 
 		return new Nothing();
+	}
+
+	public Nothing VisitBlock(Block block)
+	{
+		ExecuteBlock(block.Statements, new Environment(_environment));
+
+		return new Nothing();
+	}
+
+	private void ExecuteBlock(List<Stmt> statements,Environment environment)
+	{
+		var previous = _environment;
+		try
+		{
+			_environment = environment;
+			foreach (var stmt in statements)
+			{
+				stmt.Accept(this);
+			}
+		}
+		finally
+		{
+			_environment = previous;
+		}
 	}
 }

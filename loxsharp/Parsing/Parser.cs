@@ -59,7 +59,22 @@ public class Parser
 	{
 		if (Match(TokenType.PRINT)) return PrintStatement();
 
+		if (Match(TokenType.LEFT_BRACE)) return Block();
+
 		return ExpressionStatement();
+	}
+
+	private Stmt Block()
+	{
+		var statements = new List<Stmt>();
+
+		while (!Check(TokenType.RIGHT_BRACE) && !IsAtEnd())
+		{
+			statements.Add(Declaration());
+		}
+
+		Consume(TokenType.RIGHT_BRACE, "Expect '}' after block.");
+		return new Block(statements);
 	}
 
 	private Stmt ExpressionStatement()
@@ -85,7 +100,6 @@ public class Parser
 		return Assignment();
 	}
 
-	//TODO pint identifier will trigger assignment and throw an exception
 	private Expr Assignment()
 	{
 		var token = Peek();
