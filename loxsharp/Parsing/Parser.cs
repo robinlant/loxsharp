@@ -28,6 +28,13 @@ public class Parser
 		return statements;
 	}
 
+	public Stmt ParseRepl()
+	{
+		if (_tokens.Count >= 2 && _tokens[^2].Type is TokenType.SEMICOLON or TokenType.RIGHT_BRACE)
+			return Declaration();
+		return new Print(Expression());
+	}
+
 	private Stmt Declaration()
 	{
 		try
@@ -240,7 +247,7 @@ public class Parser
 
 		while (!IsAtEnd())
 		{
-			if (Previous().Type == TokenType.SEMICOLON) return;
+			if (Previous().Type is TokenType.SEMICOLON or TokenType.RIGHT_BRACE) return;
 
 			if (Peek().Type is TokenType.CLASS
 			    or TokenType.FUN

@@ -1,4 +1,3 @@
-using System.Linq.Expressions;
 using loxsharp.Parsing;
 using loxsharp.Parsing.Productions;
 using loxsharp.Scanning;
@@ -36,6 +35,19 @@ public class Interpreter : ISyntaxTreeVisitor<object?>, IStatementVisitor<Interp
 		}
 	}
 
+	public void InterpretRepl(Stmt statement)
+	{
+		try
+		{
+			statement.Accept(this);
+
+		}
+		catch (RuntimeException e)
+		{
+			_error(e);
+		}
+	}
+
 	public object? VisitAssign(Assign assign)
 	{
 		var value = assign.Value.Accept(this);
@@ -64,8 +76,6 @@ public class Interpreter : ISyntaxTreeVisitor<object?>, IStatementVisitor<Interp
 				}
 
 				throw new RuntimeException(binary.Token, "Operands must be two numbers or two strings.");
-
-				break;
 			case TokenType.MINUS:
 				CheckNumberOperands(binary.Token, left, right);
 				return (double)left! - (double)right!;
@@ -182,7 +192,7 @@ public class Interpreter : ISyntaxTreeVisitor<object?>, IStatementVisitor<Interp
 			return text;
 		}
 
-		return obj!.ToString() ?? "";
+		return obj.ToString() ?? "";
 	}
 
 	public Nothing VisitExpression(Expression expression)

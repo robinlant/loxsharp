@@ -58,12 +58,14 @@ public static class Program
 
 	private static void RunPrompt()
 	{
+		var interpreter = new Interpreter(RuntimeError);
 		for (;;)
 		{
 			Console.Write("> ");
 			var line = Console.ReadLine();
 			if (line is null) break;
-			Run(line);
+
+			RunRepl(line, interpreter);
 			_hadError = false;
 		}
 	}
@@ -76,6 +78,15 @@ public static class Program
 		var stmts = parser.Parse();
 		var interpreter = new Interpreter(RuntimeError);
 		interpreter.Interpret(stmts);
+	}
+
+	private static void RunRepl(string source, Interpreter interpreter)
+	{
+		var scanner = new Scanner(source, Error);
+		var tokens = scanner.ScanTokens();
+		var parser = new Parser(tokens, Error);
+		var stmt = parser.ParseRepl();
+		interpreter.InterpretRepl(stmt);
 	}
 
 	private static void Report(int line, string where, string message)
