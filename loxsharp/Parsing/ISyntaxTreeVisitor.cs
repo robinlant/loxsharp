@@ -12,6 +12,8 @@ public interface ISyntaxTreeVisitor<out T>
 
     T VisitLiteral(Literal literal);
 
+    T VisitLogical(Logical logical);
+
     T VisitUnary(Unary unary);
 
     T VisitConditional(Conditional conditional);

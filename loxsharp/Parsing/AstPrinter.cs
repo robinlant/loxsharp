@@ -36,6 +36,11 @@ public class AstPrinter : ISyntaxTreeVisitor<string>
 		return literal.Value.ToString() ?? string.Empty;
 	}
 
+	public string VisitLogical(Logical logical)
+	{
+		throw new NotImplementedException();
+	}
+
 	public string VisitUnary(Unary unary)
 	{
 		return Parenthesize(unary.Token.Lexeme, unary.Right);

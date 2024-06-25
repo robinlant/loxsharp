@@ -39,6 +39,14 @@ public record Literal(object? Value) : Expr
    }
 }
 
+public record Logical(Expr Left, Token Token, Expr Right) : Expr
+{
+   public override T Accept<T>(ISyntaxTreeVisitor<T> visitor)
+   {
+      return visitor.VisitLogical(this);
+   }
+}
+
 public record Unary(Token Token, Expr Right) : Expr
 {
    public override T Accept<T>(ISyntaxTreeVisitor<T> visitor)

@@ -31,10 +31,34 @@ public record Var(Token Token, Expr? Init) : Stmt
 	}
 }
 
-public record Block(List<Stmt> Statements) : Stmt
+public record Block(List<Stmt> Stmts) : Stmt
 {
 	public override T Accept<T>(IStatementVisitor<T> visitor)
 	{
 		return visitor.VisitBlock(this);
+	}
+}
+
+public record If(Expr Condition, Stmt ThenStmt, Stmt? ElseStmt = null) : Stmt
+{
+	public override T Accept<T>(IStatementVisitor<T> visitor)
+	{
+		return visitor.VisitIf(this);
+	}
+}
+
+public record While(Expr Condition, Stmt ThenStmt) : Stmt
+{
+	public override T Accept<T>(IStatementVisitor<T> visitor)
+	{
+		return visitor.VisitWhile(this);
+	}
+}
+
+public record For(Stmt? Init, Expr? Condition, Expr? Increment, Stmt Stmt) : Stmt
+{
+	public override T Accept<T>(IStatementVisitor<T> visitor)
+	{
+		return visitor.VisitFor(this);
 	}
 }

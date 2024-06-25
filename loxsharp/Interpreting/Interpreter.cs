@@ -70,9 +70,9 @@ public class Interpreter : ISyntaxTreeVisitor<object?>, IStatementVisitor<Interp
 					return (double)left! + (double)right!;
 				}
 
-				if (CheckTypes(typeof(string), left, right))
+				if (CheckTypes(typeof(string), left) || CheckTypes(typeof(string), right))
 				{
-					return (string)left! + (string)right!;
+					return Stringify(left) + Stringify(right);
 				}
 
 				throw new RuntimeException(binary.Token, "Operands must be two numbers or two strings.");
@@ -117,6 +117,22 @@ public class Interpreter : ISyntaxTreeVisitor<object?>, IStatementVisitor<Interp
 	public object? VisitLiteral(Literal literal)
 	{
 		return literal.Value;
+	}
+
+	public object? VisitLogical(Logical logical)
+	{
+		if (logical.Token.Type == TokenType.OR)
+		{
+			return IsTruthy(logical.Left.Accept(this)) ||
+			       IsTruthy(logical.Right.Accept(this));
+		}
+		else if (logical.Token.Type == TokenType.AND)
+		{
+			return IsTruthy(logical.Left.Accept(this)) &&
+			       IsTruthy(logical.Right.Accept(this));
+		}
+
+		return null;
 	}
 
 	public object? VisitUnary(Unary unary)
@@ -213,16 +229,68 @@ public class Interpreter : ISyntaxTreeVisitor<object?>, IStatementVisitor<Interp
 
 	public Nothing VisitVar(Var var)
 	{
-		var init = var.Init?.Accept(this);
-
-		_environment.Define(var.Token, init);
+		if (var.Init is null)
+			_environment.Define(var.Token);
+		else
+			_environment.Define(var.Token, var.Init.Accept(this));
 
 		return new Nothing();
 	}
 
 	public Nothing VisitBlock(Block block)
 	{
-		ExecuteBlock(block.Statements, new Environment(_environment));
+		ExecuteBlock(block.Stmts, new Environment(_environment));
+
+		return new Nothing();
+	}
+
+	public Nothing? VisitIf(If ifStmt)
+	{
+		var condition = ifStmt.Condition.Accept(this);
+
+		if (IsTruthy(condition))
+		{
+			ifStmt.ThenStmt.Accept(this);
+
+			return new Nothing();
+		}
+
+		if (ifStmt.ElseStmt is null) return new Nothing();
+
+		ifStmt.ElseStmt.Accept(this);
+
+		return new Nothing();
+	}
+
+	public Nothing? VisitWhile(While whileStmt)
+	{
+		while (IsTruthy(whileStmt.Condition.Accept(this)))
+		{
+			whileStmt.ThenStmt.Accept(this);
+		}
+
+		return new Nothing();
+	}
+
+	public Nothing? VisitFor(For forStmt)
+	{
+		var previous = _environment;
+		try
+		{
+			_environment = new Environment(previous);
+			forStmt.Init?.Accept(this);
+			while (forStmt.Condition is null
+			       || IsTruthy(forStmt.Condition.Accept(this)))
+			{
+				forStmt.Stmt.Accept(this);
+				forStmt.Increment?.Accept(this);
+			}
+
+		}
+		finally
+		{
+			_environment = previous;
+		}
 
 		return new Nothing();
 	}

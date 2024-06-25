@@ -1,3 +1,4 @@
+using System.ComponentModel.Design;
 using loxsharp.Parsing.Productions;
 using loxsharp.Scanning;
 
@@ -6,7 +7,7 @@ namespace loxsharp.Parsing;
 public class Parser
 {
 	private readonly List<Token> _tokens;
-	private int _current = 0;
+	private int _current;
 
 	private readonly Action<int, string> _reportError;
 
@@ -41,7 +42,7 @@ public class Parser
 		{
 			return Match(TokenType.VAR) ? VarDeclaration() : Statement();
 		}
-		catch (ParseException e)
+		catch (ParseException)
 		{
 			Synchronize();
 			return null!;
@@ -68,7 +69,73 @@ public class Parser
 
 		if (Match(TokenType.LEFT_BRACE)) return Block();
 
+		if (Match(TokenType.IF)) return If();
+
+		if (Match(TokenType.WHILE)) return While();
+
+		if (Match(TokenType.FOR)) return For();
+
 		return ExpressionStatement();
+	}
+
+	private Stmt For()
+	{
+		Consume(TokenType.LEFT_PAREN, "Expect '(' after for.");
+
+		Stmt? init = null;
+		if (!Match(TokenType.SEMICOLON))
+		{
+			init = Match(TokenType.VAR)
+				? VarDeclaration()
+				: ExpressionStatement();
+		}
+
+		Expr? condition = null;
+		if (!Match(TokenType.SEMICOLON))
+		{
+			condition = Expression();
+			Consume(TokenType.SEMICOLON, "Expect ';' after an if condition.");
+		}
+
+		Expr? incr = null;
+		if (!Match(TokenType.RIGHT_PAREN))
+		{
+			incr = Expression();
+			Consume(TokenType.RIGHT_PAREN, "Expect ') just because");
+		}
+
+
+		return new For(init, condition, incr, Statement());
+	}
+
+	private Stmt While()
+	{
+		Consume(TokenType.LEFT_PAREN, "Expect '(' after 'while'.");
+
+		var condition = Expression();
+
+		Consume(TokenType.RIGHT_PAREN, "Expect ')' after while condition.");
+
+		var stmt = Statement();
+
+		return new While(condition, stmt);
+	}
+
+	private Stmt If()
+	{
+		Consume(TokenType.LEFT_PAREN, "Expect '(' after 'if'.");
+
+		var condition = Expression();
+
+		Consume(TokenType.RIGHT_PAREN, "Expect ')' after if condition.");
+
+		var stmt = Statement();
+
+		if (!Match(TokenType.ELSE)) return new If(condition, stmt);
+
+		var elseStmt = Statement();
+
+		return new If(condition, stmt, elseStmt);
 	}
 
 	private Stmt Block()
@@ -132,7 +199,7 @@ public class Parser
 
 	private Expr Conditional()
 	{
-		var expr = Equality();
+		var expr = Logic_Or();
 
 		if (!Match(TokenType.QUESTION)) return expr;
 
@@ -143,6 +210,36 @@ public class Parser
 		var exprIfFalse = Conditional();
 
 		return new Conditional(expr, exprIfTrue, exprIfFalse);
+	}
+
+	private Expr Logic_Or()
+	{
+		if (Check(TokenType.OR))
+			throw Error(Peek(), "Left operand is missing.");
+
+		var expr = Logic_And();
+
+		while (Match(TokenType.OR))
+		{
+			expr = new Logical(expr, Previous(), Logic_And());
+		}
+
+		return expr;
+	}
+
+	private Expr Logic_And()
+	{
+		if (Check(TokenType.AND))
+			throw Error(Peek(), "Left operand is missing.");
+
+		var expr = Equality();
+
+		while (Match(TokenType.AND))
+		{
+			expr = new Logical(expr, Previous(), Equality());
+		}
+
+		return expr;
 	}
 
 	private Expr Equality()

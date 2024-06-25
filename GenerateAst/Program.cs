@@ -12,7 +12,8 @@ new GenerateAst.GenerateAst(outputDir, "Expr", new[]
 	"Binary   : Expr Left, Token Token, Expr Right",
 	"Grouping : Expr Expression",
 	"Literal  : object? Value",
+	"Logical  : Expr left, Token operator, Expr right",
 	"Unary    : Token Token, Expr Right",
 	"Conditional : Expr Condition, Expr ExprIfTrue, Expr ExprIfFalse",
-	"Variable : Token Token"
+	"Variable : Token Token",
 }).Generate();

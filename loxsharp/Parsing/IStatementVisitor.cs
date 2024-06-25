@@ -11,4 +11,10 @@ public interface IStatementVisitor<out T>
 	T VisitVar(Var var);
 
 	T VisitBlock(Block block);
+
+	T VisitIf(If ifStmt);
+
+	T VisitWhile(While whileStmt);
+
+	T VisitFor(For forStmt);
 }
