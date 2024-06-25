@@ -31,6 +31,7 @@ public class Scanner
 		Keywords.Add("true", TokenType.TRUE);
 		Keywords.Add("var", TokenType.VAR);
 		Keywords.Add("while", TokenType.WHILE);
+		Keywords.Add("break", TokenType.BREAK);
 	}
 
 	public Scanner(string source, Action<int,string> reportError)

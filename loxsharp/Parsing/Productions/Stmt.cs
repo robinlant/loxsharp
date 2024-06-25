@@ -62,3 +62,11 @@ public record For(Stmt? Init, Expr? Condition, Expr? Increment, Stmt Stmt) : Stm
 		return visitor.VisitFor(this);
 	}
 }
+
+public record Break() : Stmt
+{
+	public override T Accept<T>(IStatementVisitor<T> visitor)
+	{
+		return visitor.VisitBreak(this);
+	}
+}

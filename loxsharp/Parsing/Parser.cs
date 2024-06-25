@@ -1,4 +1,3 @@
-using System.ComponentModel.Design;
 using loxsharp.Parsing.Productions;
 using loxsharp.Scanning;
 
@@ -8,6 +7,7 @@ public class Parser
 {
 	private readonly List<Token> _tokens;
 	private int _current;
+	private bool _isLoop;
 
 	private readonly Action<int, string> _reportError;
 
@@ -75,9 +75,19 @@ public class Parser
 
 		if (Match(TokenType.FOR)) return For();
 
+		if (Match(TokenType.BREAK)) return Break();
+
 		return ExpressionStatement();
 	}
 
+	private Stmt Break()
+	{
+		if (_isLoop is false) Error(Previous(), "Use of 'break' outside of loop is prohibited.");
+		Consume(TokenType.SEMICOLON, "Expect ';' after break.");
+		return new Break();
+	}
+
+//TODO Change break behaviour after add of functions ( throw Error when a break is inside a function body that is inside a function )
 	private Stmt For()
 	{
 		Consume(TokenType.LEFT_PAREN, "Expect '(' after for.");
@@ -97,6 +107,9 @@ public class Parser
 			Consume(TokenType.SEMICOLON, "Expect ';' after an if condition.");
 		}
 
+		var previous = _isLoop;
+		_isLoop = true;
+
 		Expr? incr = null;
 		if (!Match(TokenType.RIGHT_PAREN))
 		{
@@ -104,10 +117,13 @@ public class Parser
 			Consume(TokenType.RIGHT_PAREN, "Expect ') just because");
 		}
 
+		var stmt = Statement();
 
-		return new For(init, condition, incr, Statement());
+		_isLoop = previous;
+		return new For(init, condition, incr, stmt);
 	}
 
+//TODO Change break behaviour after add of functions ( throw Error when a break is inside a function body that is inside a function )
 	private Stmt While()
 	{
 		Consume(TokenType.LEFT_PAREN, "Expect '(' after 'while'.");
@@ -116,8 +132,12 @@ public class Parser
 
 		Consume(TokenType.RIGHT_PAREN, "Expect ')' after while condition.");
 
+		var previous = _isLoop;
+		_isLoop = true;
+
 		var stmt = Statement();
 
+		_isLoop = previous;
 		return new While(condition, stmt);
 	}
 
@@ -340,6 +360,7 @@ public class Parser
 
 	private void Synchronize()
 	{
+		_isLoop = false;
 		Advance();
 
 		while (!IsAtEnd())

@@ -17,4 +17,6 @@ public interface IStatementVisitor<out T>
 	T VisitWhile(While whileStmt);
 
 	T VisitFor(For forStmt);
+
+	T VisitBreak(Break breakStmt);
 }

@@ -13,6 +13,8 @@ public class Interpreter : ISyntaxTreeVisitor<object?>, IStatementVisitor<Interp
 
 	private Environment _environment = new Environment();
 
+	private bool _isBreak;
+
 	public Interpreter(Action<RuntimeException> error)
 	{
 		_error = error;
@@ -267,6 +269,9 @@ public class Interpreter : ISyntaxTreeVisitor<object?>, IStatementVisitor<Interp
 		while (IsTruthy(whileStmt.Condition.Accept(this)))
 		{
 			whileStmt.ThenStmt.Accept(this);
+			if (!_isBreak) continue;
+			_isBreak = !_isBreak;
+			break;
 		}
 
 		return new Nothing();
@@ -283,6 +288,11 @@ public class Interpreter : ISyntaxTreeVisitor<object?>, IStatementVisitor<Interp
 			       || IsTruthy(forStmt.Condition.Accept(this)))
 			{
 				forStmt.Stmt.Accept(this);
+				if (_isBreak)
+				{
+					_isBreak = !_isBreak;
+					break;
+				}
 				forStmt.Increment?.Accept(this);
 			}
 
@@ -292,6 +302,12 @@ public class Interpreter : ISyntaxTreeVisitor<object?>, IStatementVisitor<Interp
 			_environment = previous;
 		}
 
+		return new Nothing();
+	}
+
+	public Nothing? VisitBreak(Break breakStmt)
+	{
+		_isBreak = true;
 		return new Nothing();
 	}
 

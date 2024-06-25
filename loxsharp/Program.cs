@@ -76,6 +76,7 @@ public static class Program
 		var tokens = scanner.ScanTokens();
 		var parser = new Parser(tokens, Error);
 		var stmts = parser.Parse();
+		if (_hadError) return;
 		var interpreter = new Interpreter(RuntimeError);
 		interpreter.Interpret(stmts);
 	}
@@ -85,6 +86,7 @@ public static class Program
 		var scanner = new Scanner(source, Error);
 		var tokens = scanner.ScanTokens();
 		var parser = new Parser(tokens, Error);
+		if (_hadError) return;
 		var stmt = parser.ParseRepl();
 		interpreter.InterpretRepl(stmt);
 	}
