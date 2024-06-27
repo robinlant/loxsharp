@@ -79,3 +79,11 @@ public record Variable(Token Token) : Expr
    }
 }
 
+public record Lambda(Token Token, List<Token> Params, List<Stmt> Statements) : Expr
+{
+   public override T Accept<T>(ISyntaxTreeVisitor<T> visitor)
+   {
+      return visitor.VisitLambda(this);
+   }
+}
+

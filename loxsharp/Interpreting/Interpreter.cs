@@ -210,6 +210,11 @@ public class Interpreter : ISyntaxTreeVisitor<object?>, IStatementVisitor<Interp
 		return _environment.Get(variable.Token);
 	}
 
+	public object? VisitLambda(Lambda lambda)
+	{
+		return new LoxFunction(lambda, _environment);
+	}
+
 	private bool IsTruthy(object? parameter)
 	{
 		// null or false => false, otherwise true
@@ -363,7 +368,7 @@ public class Interpreter : ISyntaxTreeVisitor<object?>, IStatementVisitor<Interp
 
 	public Nothing? VisitFunction(Function function)
 	{
-		_environment.Define(function.Name, new LoxFunction(function));
+		_environment.Define(function.Name, new LoxFunction(function, _environment));
 		return new Nothing();
 	}
 

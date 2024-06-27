@@ -17,4 +17,5 @@ new GenerateAst.GenerateAst(outputDir, "Expr", new[]
 	"Unary    : Token Token, Expr Right",
 	"Conditional : Expr Condition, Expr ExprIfTrue, Expr ExprIfFalse",
 	"Variable : Token Token",
+	"Lambda   : Token Token, List<Token> Params, List<Stmt> Statements",
 }).Generate();

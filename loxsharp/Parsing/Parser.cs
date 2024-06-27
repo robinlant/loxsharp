@@ -8,7 +8,6 @@ public class Parser
 	private readonly List<Token> _tokens;
 	private int _current;
 	private bool _isLoop;
-	private bool _isFunc;
 
 	private readonly Action<int, string> _reportError;
 
@@ -117,8 +116,6 @@ public class Parser
 
 	private Stmt Return()
 	{
-		if (_isFunc) throw Error(Previous(), "Use of 'return' outside of a function.");
-
 		var token = Previous();
 		if (Match(TokenType.SEMICOLON)) return new Return(token, null);
 
@@ -390,6 +387,7 @@ public class Parser
 		if (Match(TokenType.TRUE)) return new Literal(true);
 		if (Match(TokenType.NIL)) return new Literal(null);
 		if (Match(TokenType.IDENTIFIER)) return new Variable(Previous());
+		if (Match(TokenType.FUN)) return Lambda();
 
 		if (Match(TokenType.NUMBER, TokenType.STRING)) {
 			return new Literal(Previous().Literal);
@@ -402,6 +400,35 @@ public class Parser
 		}
 
 		throw Error(Peek(), "Expect Expression.");
+	}
+
+	private Expr Lambda()
+	{
+		var token = Previous();
+
+		Consume(TokenType.LEFT_PAREN, "Expect '(' after 'fun'");
+
+		var parameters = new List<Token>();
+
+		if (!Check(TokenType.RIGHT_PAREN))
+		{
+			do
+			{
+				if (parameters.Count >= 255)
+				{
+					Error(Peek(), $"Can't have more than 255 parameters.");
+				}
+				parameters.Add(Consume(TokenType.IDENTIFIER, "Expect parameter name."));
+			} while (Match(TokenType.COMMA));
+		}
+
+		Consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters");
+		Consume(TokenType.LEFT_BRACE, "Expect '{' before function body.");
+
+		var body = Block();
+		if (body is Block block) return new Lambda(token, parameters, block.Stmts);
+
+		return null!;
 	}
 
 	private Expr ParseBinary(Func<Expr> rule, Func<Expr, Expr> createNested, params TokenType[] types)

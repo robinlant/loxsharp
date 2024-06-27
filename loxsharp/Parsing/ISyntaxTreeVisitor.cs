@@ -21,4 +21,6 @@ public interface ISyntaxTreeVisitor<out T>
     T VisitConditional(Conditional conditional);
 
     T VisitVariable(Variable variable);
+
+    T VisitLambda(Lambda lambda);
 }

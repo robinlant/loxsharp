@@ -44,6 +44,7 @@ unary          -> ( "!" | "-" ) call
                | call ;
 call           -> primary ( "(" arguments? ")" )* ;
 primary        -> NUMBER | STRING | "true" | "false" | "nil"
-               | "(" expression ")" ;
+               | "(" expression ")"| lambda ;
 
+lambda         -> fun "(" arguments ")" block ;
 arguments      -> expression ( "," expression )* ;
