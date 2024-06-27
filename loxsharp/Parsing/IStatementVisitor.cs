@@ -19,4 +19,8 @@ public interface IStatementVisitor<out T>
 	T VisitFor(For forStmt);
 
 	T VisitBreak(Break breakStmt);
+
+	T VisitFunction(Function function);
+
+	T VisitReturn(Return returnStmt);
 }

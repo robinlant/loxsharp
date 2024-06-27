@@ -63,10 +63,26 @@ public record For(Stmt? Init, Expr? Condition, Expr? Increment, Stmt Stmt) : Stm
 	}
 }
 
-public record Break() : Stmt
+public record Break(Token Token) : Stmt
 {
 	public override T Accept<T>(IStatementVisitor<T> visitor)
 	{
 		return visitor.VisitBreak(this);
+	}
+}
+
+public record Function(Token Name, List<Token> Params, List<Stmt> Body) : Stmt
+{
+	public override T Accept<T>(IStatementVisitor<T> visitor)
+	{
+		return visitor.VisitFunction(this);
+	}
+}
+
+public record Return(Token Token, Expr? Value) : Stmt
+{
+	public override T Accept<T>(IStatementVisitor<T> visitor)
+	{
+		return visitor.VisitReturn(this);
 	}
 }

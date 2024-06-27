@@ -1,3 +1,5 @@
+using loxsharp.Interpreting.AppExceptions;
+using loxsharp.Interpreting.Globals;
 using loxsharp.Parsing;
 using loxsharp.Parsing.Productions;
 using loxsharp.Scanning;
@@ -11,13 +13,16 @@ public class Interpreter : ISyntaxTreeVisitor<object?>, IStatementVisitor<Interp
 
 	private readonly Action<RuntimeException> _error;
 
-	private Environment _environment = new Environment();
+	public Environment Globals { get; init; }
 
-	private bool _isBreak;
+	private Environment _environment;
 
 	public Interpreter(Action<RuntimeException> error)
 	{
 		_error = error;
+
+		Globals = DefineGlobal();
+		_environment = Globals;
 	}
 
 	public void Interpret(List<Stmt> statements)
@@ -35,6 +40,16 @@ public class Interpreter : ISyntaxTreeVisitor<object?>, IStatementVisitor<Interp
 		{
 			_error(e);
 		}
+	}
+
+	private Environment DefineGlobal()
+	{
+		var environment = new Environment();
+
+		// Define global objects
+		environment.Define(new Token(TokenType.IDENTIFIER, "clock", null, -1), new Clock());
+
+		return environment;
 	}
 
 	public void InterpretRepl(Stmt statement)
@@ -83,7 +98,7 @@ public class Interpreter : ISyntaxTreeVisitor<object?>, IStatementVisitor<Interp
 				return (double)left! - (double)right!;
 			case TokenType.SLASH:
 				CheckNumberOperands(binary.Token, left, right);
-				if (right is double and 0) throw new RuntimeException(binary.Token, "Division by zero is prohibited.");
+				if (right is double and 0) throw new RuntimeException(binary.Token, "Division by zero.");
 				return (double)left! / (double)right!;
 			case TokenType.STAR:
 				CheckNumberOperands(binary.Token, left, right);
@@ -111,6 +126,34 @@ public class Interpreter : ISyntaxTreeVisitor<object?>, IStatementVisitor<Interp
 		return null;
 	}
 
+	public object? VisitCall(Call call)
+	{
+		var callee = call.Callee.Accept(this);
+
+		var arguments = call.Arguments.Select(
+			x => x.Accept(this)).ToList();
+
+		if (callee is ILoxCallable callable)
+		{
+			if(callable.Arity != arguments.Count)
+			{
+				throw new RuntimeException(call.Paren,
+					$"Expected {callable.Arity} arguments but got {arguments.Count}.");
+			}
+
+			try
+			{
+				return callable.Call(this, arguments);
+			}
+			catch(ReturnException e)
+			{
+				return e.Value;
+			}
+		}
+
+		throw new RuntimeException(call.Paren, "Can only call functions and classes.");
+	}
+
 	public object? VisitGrouping(Grouping grouping)
 	{
 		return grouping.Expression.Accept(this);
@@ -123,12 +166,12 @@ public class Interpreter : ISyntaxTreeVisitor<object?>, IStatementVisitor<Interp
 
 	public object? VisitLogical(Logical logical)
 	{
-		if (logical.Token.Type == TokenType.OR)
+		if (logical.Operator.Type == TokenType.OR)
 		{
 			return IsTruthy(logical.Left.Accept(this)) ||
 			       IsTruthy(logical.Right.Accept(this));
 		}
-		else if (logical.Token.Type == TokenType.AND)
+		else if (logical.Operator.Type == TokenType.AND)
 		{
 			return IsTruthy(logical.Left.Accept(this)) &&
 			       IsTruthy(logical.Right.Accept(this));
@@ -268,9 +311,15 @@ public class Interpreter : ISyntaxTreeVisitor<object?>, IStatementVisitor<Interp
 	{
 		while (IsTruthy(whileStmt.Condition.Accept(this)))
 		{
-			whileStmt.ThenStmt.Accept(this);
-			if (!_isBreak) continue;
-			_isBreak = !_isBreak;
+
+			try
+			{
+				whileStmt.ThenStmt.Accept(this);
+			}
+			catch (BreakException)
+			{
+				return new Nothing();
+			}
 			break;
 		}
 
@@ -287,11 +336,13 @@ public class Interpreter : ISyntaxTreeVisitor<object?>, IStatementVisitor<Interp
 			while (forStmt.Condition is null
 			       || IsTruthy(forStmt.Condition.Accept(this)))
 			{
-				forStmt.Stmt.Accept(this);
-				if (_isBreak)
+				try
 				{
-					_isBreak = !_isBreak;
-					break;
+					forStmt.Stmt.Accept(this);
+				}
+				catch (BreakException)
+				{
+					return new Nothing();
 				}
 				forStmt.Increment?.Accept(this);
 			}
@@ -307,11 +358,21 @@ public class Interpreter : ISyntaxTreeVisitor<object?>, IStatementVisitor<Interp
 
 	public Nothing? VisitBreak(Break breakStmt)
 	{
-		_isBreak = true;
+		throw new BreakException(breakStmt.Token);
+	}
+
+	public Nothing? VisitFunction(Function function)
+	{
+		_environment.Define(function.Name, new LoxFunction(function));
 		return new Nothing();
 	}
 
-	private void ExecuteBlock(List<Stmt> statements,Environment environment)
+	public Nothing? VisitReturn(Return returnStmt)
+	{
+		throw new ReturnException(returnStmt.Token, returnStmt.Value?.Accept(this));
+	}
+
+	public void ExecuteBlock(List<Stmt> statements,Environment environment)
 	{
 		var previous = _environment;
 		try

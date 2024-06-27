@@ -24,6 +24,11 @@ public class AstPrinter : ISyntaxTreeVisitor<string>
 		return strBuilder.ToString();
 	}
 
+	public string VisitCall(Call call)
+	{
+		throw new NotImplementedException();
+	}
+
 	public string VisitGrouping(Grouping grouping)
 	{
 		return Parenthesize("group", grouping.Expression);

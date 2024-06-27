@@ -23,6 +23,14 @@ public record Binary(Expr Left, Token Token, Expr Right) : Expr
    }
 }
 
+public record Call(Expr Callee, Token Paren, List<Expr> Arguments) : Expr
+{
+   public override T Accept<T>(ISyntaxTreeVisitor<T> visitor)
+   {
+      return visitor.VisitCall(this);
+   }
+}
+
 public record Grouping(Expr Expression) : Expr
 {
    public override T Accept<T>(ISyntaxTreeVisitor<T> visitor)
@@ -39,7 +47,7 @@ public record Literal(object? Value) : Expr
    }
 }
 
-public record Logical(Expr Left, Token Token, Expr Right) : Expr
+public record Logical(Expr Left, Token Operator, Expr Right) : Expr
 {
    public override T Accept<T>(ISyntaxTreeVisitor<T> visitor)
    {

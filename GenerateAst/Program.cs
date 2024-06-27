@@ -10,6 +10,7 @@ new GenerateAst.GenerateAst(outputDir, "Expr", new[]
 {
 	"Assign   : Token Token, Expr value",
 	"Binary   : Expr Left, Token Token, Expr Right",
+	"Call	  : Expr Callee, Token Paren, List<Expr> arguments",
 	"Grouping : Expr Expression",
 	"Literal  : object? Value",
 	"Logical  : Expr left, Token operator, Expr right",

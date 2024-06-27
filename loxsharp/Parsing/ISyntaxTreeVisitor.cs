@@ -8,6 +8,8 @@ public interface ISyntaxTreeVisitor<out T>
 
     T VisitBinary(Binary binary);
 
+    T VisitCall(Call call);
+
     T VisitGrouping(Grouping grouping);
 
     T VisitLiteral(Literal literal);

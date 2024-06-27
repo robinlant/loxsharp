@@ -8,6 +8,7 @@ public class Parser
 	private readonly List<Token> _tokens;
 	private int _current;
 	private bool _isLoop;
+	private bool _isFunc;
 
 	private readonly Action<int, string> _reportError;
 
@@ -40,13 +41,45 @@ public class Parser
 	{
 		try
 		{
-			return Match(TokenType.VAR) ? VarDeclaration() : Statement();
+			if (Match(TokenType.VAR)) return VarDeclaration();
+			if (Match(TokenType.FUN)) return Function("function");
+
+			return Statement();
 		}
 		catch (ParseException)
 		{
 			Synchronize();
 			return null!;
 		}
+	}
+
+
+	private Stmt Function(string kind)
+	{
+		var token = Consume(TokenType.IDENTIFIER, "Expect " + kind + " name.");
+		Consume(TokenType.LEFT_PAREN, "Expect '(' after " + kind + " name.");
+
+		var parameters = new List<Token>();
+
+		if (!Check(TokenType.RIGHT_PAREN))
+		{
+			do
+			{
+				if (parameters.Count >= 255)
+				{
+					Error(Peek(), $"Can't have more than 255 parameters.");
+				}
+				parameters.Add(Consume(TokenType.IDENTIFIER, "Expect parameter name."));
+			} while (Match(TokenType.COMMA));
+		}
+
+		Consume(TokenType.RIGHT_PAREN, "Expect ')' after parameters");
+		Consume(TokenType.LEFT_BRACE, "Expect '{' before " + kind + " body.");
+
+		var body = Block();
+		if (body is Block block) return new Function(token, parameters, block.Stmts);
+
+		return null!;
 	}
 
 	private Stmt VarDeclaration()
@@ -77,17 +110,33 @@ public class Parser
 
 		if (Match(TokenType.BREAK)) return Break();
 
+		if (Match(TokenType.RETURN)) return Return();
+
 		return ExpressionStatement();
+	}
+
+	private Stmt Return()
+	{
+		if (_isFunc) throw Error(Previous(), "Use of 'return' outside of a function.");
+
+		var token = Previous();
+		if (Match(TokenType.SEMICOLON)) return new Return(token, null);
+
+		var expr = Expression();
+
+		Consume(TokenType.SEMICOLON, "Expect ';' after return statement.");
+
+		return new Return(token, expr);
 	}
 
 	private Stmt Break()
 	{
-		if (_isLoop is false) Error(Previous(), "Use of 'break' outside of loop is prohibited.");
+		if (_isLoop is false) throw Error(Previous(), "Use of 'break' outside of loop body.");
+		var token = Previous();
 		Consume(TokenType.SEMICOLON, "Expect ';' after break.");
-		return new Break();
+		return new Break(token);
 	}
 
-//TODO Change break behaviour after add of functions ( throw Error when a break is inside a function body that is inside a function )
 	private Stmt For()
 	{
 		Consume(TokenType.LEFT_PAREN, "Expect '(' after for.");
@@ -123,7 +172,6 @@ public class Parser
 		return new For(init, condition, incr, stmt);
 	}
 
-//TODO Change break behaviour after add of functions ( throw Error when a break is inside a function body that is inside a function )
 	private Stmt While()
 	{
 		Consume(TokenType.LEFT_PAREN, "Expect '(' after 'while'.");
@@ -205,9 +253,7 @@ public class Parser
 
 		if (expr is Variable) return new Assign(token, value);
 
-		Error(equals, "Invalid assignment target.");
-
-		return null!;
+		throw Error(equals, "Invalid assignment target.");
 	}
 
 	private Expr Comma()
@@ -297,8 +343,46 @@ public class Parser
 	{
 		return Match(TokenType.BANG, TokenType.MINUS)
 			? new Unary(Previous(), Unary())
-			: Primary();
+			: Call();
 	}
+
+	private Expr Call()
+	{
+		var expr = Primary();
+
+		while (Match(TokenType.LEFT_PAREN)) expr = FinishCall(expr);
+
+		return expr;
+	}
+
+	private Expr FinishCall(Expr callee)
+	{
+		var arguments = Arguments();
+
+		var paren = Consume(TokenType.RIGHT_PAREN, "Expect ')' after arguments.");
+
+		return new Call(callee, paren, arguments);
+	}
+
+	private List<Expr> Arguments()
+	{
+		var arguments = new List<Expr>();
+
+		if (!Check(TokenType.RIGHT_PAREN))
+		{
+			do
+			{
+				if (arguments.Count >= 255)
+				{
+					Error(Peek(), $"Can't have more than 255 arguments.");
+				}
+				arguments.Add(Conditional());
+			} while (Match(TokenType.COMMA));
+		}
+
+		return arguments;
+	}
+
 
 	private Expr Primary()
 	{
