@@ -78,7 +78,10 @@ public static class Program
 		var stmts = parser.Parse();
 		if (_hadError) return;
 		var interpreter = new Interpreter(RuntimeError);
-		interpreter.Interpret(stmts);
+		var resolver = new Resolver(interpreter, Error);
+		resolver.Resolve(stmts);
+		if (!_hadError)
+			interpreter.Interpret(stmts);
 	}
 
 	private static void RunRepl(string source, Interpreter interpreter)

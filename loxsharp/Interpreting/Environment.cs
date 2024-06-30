@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using loxsharp.Scanning;
 
 namespace loxsharp.Interpreting;
@@ -57,9 +58,31 @@ public class Environment
 				? value
 				: throw new RuntimeException(token,"Use of unassigned variable at '" + token.Lexeme +"'.");
 		}
-		else if (_enclosing is not null) return _enclosing.Get(token);
+		if (_enclosing is not null) return _enclosing.Get(token);
 
 		throw new RuntimeException(token, "Undefined variable '" + token.Lexeme + "'.");
+	}
+
+	public object? GetAt(int depth, Token token)
+	{
+		return Ancestor((uint)depth)._dictionary[token.Lexeme];
+	}
+
+	public void AssignAt(int depth, Token token, object? value)
+	{
+		Ancestor((uint)depth)._dictionary[token.Lexeme] = value;
+	}
+
+	private Environment Ancestor(uint depth)
+	{
+		var environment = this;
+
+		for (var i = 0; i < depth; i++)
+		{
+			environment = _enclosing;
+		}
+
+		return environment!;
 	}
 
 	private record Undefined();

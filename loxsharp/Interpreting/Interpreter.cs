@@ -17,6 +17,8 @@ public class Interpreter : ISyntaxTreeVisitor<object?>, IStatementVisitor<Interp
 
 	private Environment _environment;
 
+	private readonly Dictionary<Expr, int> _locals = new();
+
 	public Interpreter(Action<RuntimeException> error)
 	{
 		_error = error;
@@ -69,7 +71,10 @@ public class Interpreter : ISyntaxTreeVisitor<object?>, IStatementVisitor<Interp
 	{
 		var value = assign.Value.Accept(this);
 
-		_environment.Assign(assign.Token,value);
+		if (_locals.TryGetValue(assign, out var depth))
+			_environment.AssignAt(depth, assign.Token, value);
+		else
+			Globals.Assign(assign.Token, value);
 
 		return value;
 	}
@@ -207,7 +212,7 @@ public class Interpreter : ISyntaxTreeVisitor<object?>, IStatementVisitor<Interp
 
 	public object? VisitVariable(Variable variable)
 	{
-		return _environment.Get(variable.Token);
+		return LookUpVariable(variable.Token, variable);
 	}
 
 	public object? VisitLambda(Lambda lambda)
@@ -392,5 +397,18 @@ public class Interpreter : ISyntaxTreeVisitor<object?>, IStatementVisitor<Interp
 		{
 			_environment = previous;
 		}
+	}
+
+	public void Resolve(Expr expression, int depth)
+	{
+		_locals.Add(expression,depth);
+	}
+
+	private object? LookUpVariable(Token token, Expr expr)
+	{
+		return _locals.TryGetValue(expr, out var depth)
+			? _environment.GetAt(depth, token)
+			: Globals.Get(token);
+
 	}
 }
