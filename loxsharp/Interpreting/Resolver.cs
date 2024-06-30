@@ -8,7 +8,7 @@ public class Resolver : ISyntaxTreeVisitor<Resolver.Unit>, IStatementVisitor<Res
 {
 	public struct Unit {}
 
-	private readonly List<Dictionary<string, bool>> _scopes = new();
+	private readonly List<Dictionary<string, VariableInfo>> _scopes = new();
 
 	private readonly Action<int, string> _reportError;
 
@@ -83,7 +83,7 @@ public class Resolver : ISyntaxTreeVisitor<Resolver.Unit>, IStatementVisitor<Res
 	{
 		if (_scopes.Count != 0
 		    && _scopes[^1].TryGetValue(variable.Token.Lexeme, out var res)
-		    &&!res)
+		    &&!res.IsDefined)
 		{
 			Error(variable.Token, "Can't read local variable in its own initializer.");
 		}
@@ -179,11 +179,16 @@ public class Resolver : ISyntaxTreeVisitor<Resolver.Unit>, IStatementVisitor<Res
 
 	private void BeginScope()
 	{
-		_scopes.Add(new Dictionary<string, bool>());
+		_scopes.Add(new Dictionary<string, VariableInfo>());
 	}
 
 	private void EndScope()
 	{
+		foreach (var variable in _scopes[^1].Where(variable => !variable.Value.IsUsed))
+		{
+			Error(new Token(TokenType.IDENTIFIER,variable.Key,null,-1), $"Local variable '{variable.Key}' is never used.");
+		}
+
 		_scopes.RemoveAt(_scopes.Count - 1);
 	}
 
@@ -215,14 +220,14 @@ public class Resolver : ISyntaxTreeVisitor<Resolver.Unit>, IStatementVisitor<Res
 			return;
 		}
 
-		_scopes[^1].Add(token.Lexeme, false);
+		_scopes[^1].Add(token.Lexeme, new VariableInfo());
 	}
 
 	private void Define(Token token)
 	{
 		if (_scopes.Count == 0) return;
 
-		_scopes[^1][token.Lexeme] = true;
+		_scopes[^1][token.Lexeme] = _scopes[^1][token.Lexeme] with { IsDefined = true };
 	}
 
 	private void Error(Token token, string message)
@@ -235,6 +240,7 @@ public class Resolver : ISyntaxTreeVisitor<Resolver.Unit>, IStatementVisitor<Res
 		for (var i = _scopes.Count - 1; i >= 0; i--)
 		{
 			if (!_scopes[i].ContainsKey(token.Lexeme)) continue;
+			_scopes[i][token.Lexeme] = _scopes[i][token.Lexeme] with { IsUsed = true };
 			_interpreter.Resolve(expr, _scopes.Count - 1 - i);
 			return;
 		}
@@ -265,5 +271,12 @@ public class Resolver : ISyntaxTreeVisitor<Resolver.Unit>, IStatementVisitor<Res
 		Function,
 		Lambda,
 
+	}
+
+	private struct VariableInfo
+	{
+		public bool IsDefined { get; set; }
+
+		public bool IsUsed { get; set; }
 	}
 }
