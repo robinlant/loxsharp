@@ -16,6 +16,8 @@ public class Resolver : ISyntaxTreeVisitor<Resolver.Unit>, IStatementVisitor<Res
 
 	private FunctionType _functionType = FunctionType.None;
 
+	private ClassType _classType = ClassType.Class;
+
 	public Resolver(Interpreter interpreter ,Action<int, string> error)
 	{
 		_interpreter = interpreter;
@@ -75,6 +77,13 @@ public class Resolver : ISyntaxTreeVisitor<Resolver.Unit>, IStatementVisitor<Res
 		Resolve(set.Value);
 		Resolve(set.Object);
 
+		return new Unit();
+	}
+
+	public Unit VisitThis(This @this)
+	{
+		if(_classType == ClassType.None) Error(@this.Token, "Can't use 'this' outside of a class.");
+		ResolveLocal(@this, @this.Token);
 		return new Unit();
 	}
 
@@ -184,6 +193,8 @@ public class Resolver : ISyntaxTreeVisitor<Resolver.Unit>, IStatementVisitor<Res
 
 	public Unit VisitReturn(Return returnStmt)
 	{
+		if (_functionType == FunctionType.Init && returnStmt.Value is not null)
+			Error(returnStmt.Token, "Can't return a value from an initializer.");
 		if (_functionType == FunctionType.None)
 			Error(returnStmt.Token, "Use of 'return' outside of function or method body.");
 
@@ -193,15 +204,22 @@ public class Resolver : ISyntaxTreeVisitor<Resolver.Unit>, IStatementVisitor<Res
 
 	public Unit VisitClass(Class classStmt)
 	{
+		var previous = _classType;
+		_classType = ClassType.Class;
+
 		Declare(classStmt.Token);
 		Define(classStmt.Token);
+		BeginScope();
 
+		_scopes[^1].Add("this", new VariableInfo(){IsUsed = true, IsDefined = true});
 		foreach (var func in classStmt.Functions)
 		{
-			const FunctionType declaration = FunctionType.Method;
+			var declaration = func.Name.Lexeme == "init" ? FunctionType.Init : FunctionType.Method;
 			ResolveLoxFunction(func.Params,func.Body,declaration);
 		}
 
+		EndScope();
+		_classType = previous;
 		return new Unit();
 	}
 
@@ -299,6 +317,7 @@ public class Resolver : ISyntaxTreeVisitor<Resolver.Unit>, IStatementVisitor<Res
 		Function,
 		Lambda,
 		Method,
+		Init,
 
 	}
 
@@ -307,5 +326,11 @@ public class Resolver : ISyntaxTreeVisitor<Resolver.Unit>, IStatementVisitor<Res
 		public bool IsDefined { get; set; }
 
 		public bool IsUsed { get; set; }
+	}
+
+	private enum ClassType
+	{
+		None,
+		Class
 	}
 }

@@ -420,6 +420,7 @@ public class Parser
 		if (Match(TokenType.IDENTIFIER)) return new Variable(Previous());
 		if (Match(TokenType.FUN)) return Lambda();
 		if (Match(TokenType.NUMBER, TokenType.STRING)) return new Literal(Previous().Literal);
+		if (Match(TokenType.THIS)) return new This(Previous());
 
 
 		if (Match(TokenType.LEFT_PAREN)) {

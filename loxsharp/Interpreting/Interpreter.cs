@@ -207,6 +207,11 @@ public class Interpreter : ISyntaxTreeVisitor<object?>, IStatementVisitor<Interp
 
 	}
 
+	public object? VisitThis(This @this)
+	{
+		return LookUpVariable(@this.Token, @this);
+	}
+
 	public object? VisitUnary(Unary unary)
 	{
 		var right = unary.Right.Accept(this);

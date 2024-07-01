@@ -23,7 +23,7 @@ public class LoxInstance
 			return res;
 
 		var method = _loxClass.GetMethod(token.Lexeme);
-		if (method is not null) return method;
+		if (method is not null) return method.Bind(this);
 
 		throw new RuntimeException(token, "Undefined property '" + token.Lexeme + "'.");
 	}

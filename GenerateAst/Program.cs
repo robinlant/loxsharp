@@ -16,6 +16,7 @@ new GenerateAst.GenerateAst(outputDir, "Expr", new[]
 	"Literal  : object? Value",
 	"Logical  : Expr left, Token operator, Expr right",
 	"Set	  : Expr Object, Token Token, Expr Value",
+	"This     : Token Token",
 	"Unary    : Token Token, Expr Right",
 	"Conditional : Expr Condition, Expr ExprIfTrue, Expr ExprIfFalse",
 	"Variable : Token Token",

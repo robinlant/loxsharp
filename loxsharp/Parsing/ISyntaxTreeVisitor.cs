@@ -20,6 +20,8 @@ public interface ISyntaxTreeVisitor<out T>
 
     T VisitSet(Set set);
 
+    T VisitThis(This @this);
+
     T VisitUnary(Unary unary);
 
     T VisitConditional(Conditional conditional);

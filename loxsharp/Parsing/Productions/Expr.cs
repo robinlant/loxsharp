@@ -71,6 +71,14 @@ public record Set(Expr Object, Token Token, Expr Value) : Expr
    }
 }
 
+public record This(Token Token) : Expr
+{
+   public override T Accept<T>(ISyntaxTreeVisitor<T> visitor)
+   {
+      return visitor.VisitThis(this);
+   }
+}
+
 public record Unary(Token Token, Expr Right) : Expr
 {
    public override T Accept<T>(ISyntaxTreeVisitor<T> visitor)
