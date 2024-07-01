@@ -10,11 +10,15 @@ public interface ISyntaxTreeVisitor<out T>
 
     T VisitCall(Call call);
 
+    T VisitGet(Get get);
+
     T VisitGrouping(Grouping grouping);
 
     T VisitLiteral(Literal literal);
 
     T VisitLogical(Logical logical);
+
+    T VisitSet(Set set);
 
     T VisitUnary(Unary unary);
 

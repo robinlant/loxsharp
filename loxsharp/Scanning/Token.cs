@@ -1,11 +1,11 @@
 namespace loxsharp.Scanning;
 
-public class Token
+public readonly struct Token
 {
-	public TokenType Type { get; init; }
-	public string Lexeme { get; init; }
-	public object? Literal { get; init; }
-	public int Line { get; init; }
+	public TokenType Type { get;  }
+	public string Lexeme { get;  }
+	public object? Literal { get;  }
+	public int Line { get; }
 
 	public Token(TokenType type, string lexeme, object? literal, int line)
 	{

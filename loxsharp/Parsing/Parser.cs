@@ -42,6 +42,7 @@ public class Parser
 		{
 			if (Match(TokenType.VAR)) return VarDeclaration();
 			if (Match(TokenType.FUN)) return Function("function");
+			if (Match(TokenType.CLASS)) return ClassDeclaration();
 
 			return Statement();
 		}
@@ -52,8 +53,23 @@ public class Parser
 		}
 	}
 
+	private Stmt ClassDeclaration()
+	{
+		var token = Consume(TokenType.IDENTIFIER, "Expect class name.");
+		Consume(TokenType.LEFT_BRACE, "Expect '{' before class body.");
 
-	private Stmt Function(string kind)
+		var methods = new List<Function>();
+		while (!Check(TokenType.RIGHT_BRACE) && !IsAtEnd())
+		{
+			methods.Add(Function("method"));
+		}
+
+		Consume(TokenType.RIGHT_BRACE, "Expect '}' after class body.");
+		return new Class(token, methods);
+	}
+
+
+	private Function Function(string kind)
 	{
 		var token = Consume(TokenType.IDENTIFIER, "Expect " + kind + " name.");
 		Consume(TokenType.LEFT_PAREN, "Expect '(' after " + kind + " name.");
@@ -241,6 +257,7 @@ public class Parser
 
 	private Expr Assignment()
 	{
+
 		var token = Peek();
 		var expr = Comma();
 
@@ -249,6 +266,7 @@ public class Parser
 		var value = Assignment();
 
 		if (expr is Variable) return new Assign(token, value);
+		if (expr is Get get) return new Set(get.Object, get.Token, value);
 
 		throw Error(equals, "Invalid assignment target.");
 	}
@@ -347,6 +365,19 @@ public class Parser
 	{
 		var expr = Primary();
 
+		while (true)
+		{
+			if (Match(TokenType.LEFT_PAREN))
+				expr = FinishCall(expr);
+			else if (Match(TokenType.DOT))
+			{
+				var token = Consume(TokenType.IDENTIFIER, "Expect property name after '.'.");
+				expr = new Get(expr, token);
+			}
+			else
+				break;
+		}
+
 		while (Match(TokenType.LEFT_PAREN)) expr = FinishCall(expr);
 
 		return expr;
@@ -388,10 +419,8 @@ public class Parser
 		if (Match(TokenType.NIL)) return new Literal(null);
 		if (Match(TokenType.IDENTIFIER)) return new Variable(Previous());
 		if (Match(TokenType.FUN)) return Lambda();
+		if (Match(TokenType.NUMBER, TokenType.STRING)) return new Literal(Previous().Literal);
 
-		if (Match(TokenType.NUMBER, TokenType.STRING)) {
-			return new Literal(Previous().Literal);
-		}
 
 		if (Match(TokenType.LEFT_PAREN)) {
 			var expr = Expression();

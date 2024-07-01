@@ -159,6 +159,15 @@ public class Interpreter : ISyntaxTreeVisitor<object?>, IStatementVisitor<Interp
 		throw new RuntimeException(call.Paren, "Can only call functions and classes.");
 	}
 
+	public object? VisitGet(Get get)
+	{
+		var obj = get.Object.Accept(this);
+
+		if (obj is LoxInstance loxInstance)
+			return loxInstance.Get(get.Token);
+		throw new RuntimeException(get.Token, "Only instances have properties.");
+	}
+
 	public object? VisitGrouping(Grouping grouping)
 	{
 		return grouping.Expression.Accept(this);
@@ -183,6 +192,19 @@ public class Interpreter : ISyntaxTreeVisitor<object?>, IStatementVisitor<Interp
 		}
 
 		return null;
+	}
+
+	public object? VisitSet(Set set)
+	{
+		var obj = set.Object.Accept(this);
+
+		if (obj is not LoxInstance loxInstance)
+			throw new RuntimeException(set.Token,  "Only instances have fields.");
+
+		var value = set.Value.Accept(this);
+		loxInstance.Set(set.Token, value);
+		return value;
+
 	}
 
 	public object? VisitUnary(Unary unary)
@@ -380,6 +402,17 @@ public class Interpreter : ISyntaxTreeVisitor<object?>, IStatementVisitor<Interp
 	public Nothing? VisitReturn(Return returnStmt)
 	{
 		throw new ReturnException(returnStmt.Token, returnStmt.Value?.Accept(this));
+	}
+
+	public Nothing? VisitClass(Class classStmt)
+	{
+		_environment.Define(classStmt.Token);
+
+		var methods = classStmt.Functions.ToDictionary(i => i.Name.Lexeme, i => new LoxFunction(i, _environment));
+
+		var loxClass = new LoxClass(classStmt.Token.Lexeme, methods);
+		_environment.Assign(classStmt.Token, loxClass);
+		return new Nothing();
 	}
 
 	public void ExecuteBlock(List<Stmt> statements,Environment environment)

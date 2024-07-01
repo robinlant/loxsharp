@@ -31,6 +31,14 @@ public record Call(Expr Callee, Token Paren, List<Expr> Arguments) : Expr
    }
 }
 
+public record Get(Expr Object, Token Token) : Expr
+{
+   public override T Accept<T>(ISyntaxTreeVisitor<T> visitor)
+   {
+      return visitor.VisitGet(this);
+   }
+}
+
 public record Grouping(Expr Expression) : Expr
 {
    public override T Accept<T>(ISyntaxTreeVisitor<T> visitor)
@@ -52,6 +60,14 @@ public record Logical(Expr Left, Token Operator, Expr Right) : Expr
    public override T Accept<T>(ISyntaxTreeVisitor<T> visitor)
    {
       return visitor.VisitLogical(this);
+   }
+}
+
+public record Set(Expr Object, Token Token, Expr Value) : Expr
+{
+   public override T Accept<T>(ISyntaxTreeVisitor<T> visitor)
+   {
+      return visitor.VisitSet(this);
    }
 }
 

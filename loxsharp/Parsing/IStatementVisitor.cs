@@ -23,4 +23,6 @@ public interface IStatementVisitor<out T>
 	T VisitFunction(Function function);
 
 	T VisitReturn(Return returnStmt);
+
+	T VisitClass(Class classStmt);
 }

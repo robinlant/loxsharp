@@ -46,6 +46,12 @@ public class Resolver : ISyntaxTreeVisitor<Resolver.Unit>, IStatementVisitor<Res
 		return new Unit();
 	}
 
+	public Unit VisitGet(Get get)
+	{
+		Resolve(get.Object);
+		return new Unit();
+	}
+
 	public Unit VisitGrouping(Grouping grouping)
 	{
 		Resolve(grouping.Expression);
@@ -61,6 +67,14 @@ public class Resolver : ISyntaxTreeVisitor<Resolver.Unit>, IStatementVisitor<Res
 	{
 		Resolve(logical.Left);
 		Resolve(logical.Right);
+		return new Unit();
+	}
+
+	public Unit VisitSet(Set set)
+	{
+		Resolve(set.Value);
+		Resolve(set.Object);
+
 		return new Unit();
 	}
 
@@ -177,6 +191,20 @@ public class Resolver : ISyntaxTreeVisitor<Resolver.Unit>, IStatementVisitor<Res
 		return new Unit();
 	}
 
+	public Unit VisitClass(Class classStmt)
+	{
+		Declare(classStmt.Token);
+		Define(classStmt.Token);
+
+		foreach (var func in classStmt.Functions)
+		{
+			const FunctionType declaration = FunctionType.Method;
+			ResolveLoxFunction(func.Params,func.Body,declaration);
+		}
+
+		return new Unit();
+	}
+
 	private void BeginScope()
 	{
 		_scopes.Add(new Dictionary<string, VariableInfo>());
@@ -270,6 +298,7 @@ public class Resolver : ISyntaxTreeVisitor<Resolver.Unit>, IStatementVisitor<Res
 		None,
 		Function,
 		Lambda,
+		Method,
 
 	}
 

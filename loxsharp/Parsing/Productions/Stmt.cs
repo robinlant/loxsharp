@@ -86,3 +86,11 @@ public record Return(Token Token, Expr? Value) : Stmt
 		return visitor.VisitReturn(this);
 	}
 }
+
+public record Class(Token Token, List<Function> Functions) : Stmt
+{
+	public override T Accept<T>(IStatementVisitor<T> visitor)
+	{
+		return visitor.VisitClass(this);
+	}
+}
